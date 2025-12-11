@@ -1,3 +1,4 @@
+// src/pages/Watch.jsx
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Player from "../components/Player";
@@ -8,12 +9,21 @@ export default function Watch() {
   const [stream, setStream] = useState("");
 
   useEffect(() => {
-    (async () => {
-      const m = await fetch(`http://localhost:3000/video/${id}`).then((r) => r.json());
-      const s = await fetch(`http://localhost:3000/streams/${id}`).then((r) => r.json());
+    if (!id) return; // skip if id is undefined
 
-      setVideo(m);
-      setStream(s.best);
+    (async () => {
+      try {
+        const videoResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/video/${id}`);
+        const videoData = await videoResponse.json();
+
+        const streamResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/streams/${id}`);
+        const streamData = await streamResponse.json();
+
+        setVideo(videoData);
+        setStream(streamData.best);
+      } catch (error) {
+        console.error("Error fetching video or stream:", error);
+      }
     })();
   }, [id]);
 
