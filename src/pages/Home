@@ -1,0 +1,25 @@
+import { useState } from "react";
+import SearchBar from "../components/SearchBar";
+import VideoCard from "../components/VideoCard";
+
+export default function Home() {
+  const [results, setResults] = useState([]);
+
+  const search = async (q) => {
+    const r = await fetch(`http://localhost:3000/search?q=${q}`);
+    const data = await r.json();
+    setResults(data.results);
+  };
+
+  return (
+    <div>
+      <SearchBar onSearch={search} />
+
+      <div className="grid">
+        {results.map((video) => (
+          <VideoCard key={video.id} video={video} />
+        ))}
+      </div>
+    </div>
+  );
+}
