@@ -1,16 +1,30 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+name: Deploy Frontend to Vercel
 
-export default defineConfig({
-  plugins: [react()],
-  base: "/MyTube-Frontend/", // important for GitHub Pages
-  server: {
-    port: 5173,
-    proxy: {
-      "/api": "https://mytube-backend-xlz4.onrender.com" // live backend
-    }
-  },
-  build: {
-    outDir: "dist"
-  }
-});
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Deploy to Vercel
+        run: npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
