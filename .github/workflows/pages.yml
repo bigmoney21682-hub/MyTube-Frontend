@@ -28,9 +28,9 @@ jobs:
       - name: Build app
         run: npm run build
 
-      # 5. Upload Pages artifact (latest, non-deprecated)
+      # 5. Upload Pages artifact (latest non-deprecated)
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: ./dist
 
