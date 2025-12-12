@@ -1,3 +1,4 @@
+# .github/workflows/pages.yml
 name: Deploy MyTube-Frontend
 
 on:
@@ -9,6 +10,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       # 1. Checkout repository
       - name: Checkout repository
