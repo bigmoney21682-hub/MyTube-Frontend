@@ -1,37 +1,41 @@
-name: Deploy MyTube Frontend
+name: Deploy MyTube-Frontend
 
 on:
   push:
     branches:
-      - main   # or your default branch
+      - main  # or your default branch
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout code
+      # 1. Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
       # 2. Setup Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
 
       # 3. Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      # 4. Build the project
+      # 4. Build frontend
       - name: Build frontend
         run: npm run build
 
-      # 5. Deploy to GitHub Pages
+      # 5. Upload artifact for GitHub Pages
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./dist
+
+      # 6. Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifact_name: github-pages
-          artifact_path: ./dist
