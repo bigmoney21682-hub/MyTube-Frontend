@@ -1,24 +1,14 @@
-# .github/workflows/pages.yml
-name: Deploy MyTube-Frontend
+name: Build MyTube-Frontend Only
 
-# Trigger on push to main or manual dispatch
 on:
   push:
     branches:
       - main
   workflow_dispatch:
 
-# Explicit workflow-level permissions
-permissions:
-  contents: write       # allows reading/writing repo files
-  pages: write          # allows deploying to GitHub Pages
-  id-token: write       # required by deploy-pages action
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment: github-pages   # must match a Pages environment
-
     steps:
       # 1. Checkout repository
       - name: Checkout repository
@@ -34,18 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 4. Build the app (Vite default output: ./dist)
-      - name: Build app
+      # 4. Build the app
+      - name: Build Vite app
         run: npm run build
 
-      # 5. Upload the build artifact (non-deprecated)
-      - name: Upload Pages Artifact
+      # 5. Upload artifact (optional, non-deprecated)
+      - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./dist
-
-      # 6. Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
