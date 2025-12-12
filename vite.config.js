@@ -1,10 +1,14 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyTube</title>
+  </head>
+  <body>
+    <div id="root"></div>
 
-export default defineConfig({
-  base: "/MyTube-Frontend/",
-  plugins: [react()],
-  build: {
-    outDir: "dist"
-  }
-});
+    <!-- This is REQUIRED for Vite to load your app -->
+    <script type="module" src="/MyTube-Frontend/src/main.jsx"></script>
+  </body>
+</html>
