@@ -9,6 +9,9 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read      # needed to access repo contents
+      id-token: write     # required by deploy-pages@v4 for OIDC
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout repository
@@ -28,7 +31,7 @@ jobs:
       - name: Build app
         run: npm run build
 
-      # 5️⃣ Upload Pages artifact (non-deprecated)
+      # 5️⃣ Upload Pages Artifact (latest supported)
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
