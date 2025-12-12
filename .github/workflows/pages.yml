@@ -10,38 +10,32 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    # Correct permissions for deploy-pages
-    permissions:
-      contents: read       # access repository files
-      id-token: write      # required by deploy-pages for OIDC
-      pages: write         # required to create/update Pages deployment
-
     steps:
-      # 1. Checkout code
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3. Install dependencies
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # 4. Build the app
+      # 4️⃣ Build the app
       - name: Build app
         run: npm run build
 
-      # 5. Upload Pages artifact (non-deprecated)
+      # 5️⃣ Upload Pages artifact (latest v3, non-deprecated)
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
-      # 6. Deploy to GitHub Pages
+      # 6️⃣ Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
