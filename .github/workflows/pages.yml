@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # trigger on pushes to main branch
+      - main  # or your primary branch name
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -29,22 +29,18 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # Upload the entire dist folder as artifact
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist  # upload the entire dist folder, not just index.html
+          path: ./dist
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
       - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v1
-        with:
-          artifact-path: ./dist  # deploy the full dist folder
+        id: deployment
+        uses: actions/deploy-pages@v4
