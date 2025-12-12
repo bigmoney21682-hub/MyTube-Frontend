@@ -2,12 +2,20 @@ name: Deploy MyTube-Frontend
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: github-pages
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
