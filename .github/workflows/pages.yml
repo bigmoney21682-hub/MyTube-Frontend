@@ -10,11 +10,11 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout code
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -28,7 +28,7 @@ jobs:
       - name: Build app
         run: npm run build
 
-      # 5. Upload Pages artifact (non-deprecated)
+      # 5. Upload Pages artifact (latest, non-deprecated)
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v1
         with:
