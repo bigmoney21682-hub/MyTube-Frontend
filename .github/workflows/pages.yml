@@ -28,14 +28,14 @@ jobs:
       - name: Build app
         run: npm run build
 
-      # 5. Upload Pages artifact (v2, non-deprecated)
+      # 5. Upload Pages artifact (non-deprecated)
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./dist
 
-      # 6. Deploy to GitHub Pages
+      # 6. Deploy to GitHub Pages (v5 to avoid deprecated v3)
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
