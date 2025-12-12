@@ -1,3 +1,4 @@
+// src/pages/Watch.jsx
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Player from "../components/Player";
@@ -12,13 +13,13 @@ export default function Watch() {
 
     (async () => {
       try {
-        // Fetch video metadata from Render backend
+        // Fetch video metadata
         const videoResponse = await fetch(
           `https://mytube-backend-xlz4.onrender.com/video/${id}`
         );
         const videoData = await videoResponse.json();
 
-        // Fetch stream URL from Render backend
+        // Fetch video streams
         const streamResponse = await fetch(
           `https://mytube-backend-xlz4.onrender.com/streams/${id}`
         );
