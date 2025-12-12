@@ -3,18 +3,18 @@ name: Deploy MyTube-Frontend
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout repo
+      # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
+      # 2. Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -24,11 +24,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 4. Build frontend
-      - name: Build frontend
+      # 4. Build the app
+      - name: Build app
         run: npm run build
 
-      # 5. Upload artifact for GitHub Pages
+      # 5. Upload Pages artifact (non-deprecated)
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v1
         with:
