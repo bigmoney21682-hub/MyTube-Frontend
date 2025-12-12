@@ -1,39 +1,37 @@
-// src/pages/Watch.jsx
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import Player from "../components/Player";
+// src/pages/Home.jsx
+import { useState } from "react";
+import SearchBar from "../components/SearchBar";
+import VideoCard from "../components/VideoCard";
 
-export default function Watch() {
-  const { id } = useParams();
-  const [video, setVideo] = useState(null);
-  const [stream, setStream] = useState("");
+export default function Home() {
+  const [results, setResults] = useState([]);
 
-  useEffect(() => {
-    if (!id) return; // skip if id is undefined
+  const handleSearch = async (query) => {
+    try {
+      const res = await fetch(
+        `https://mytube-backend-xlz4.onrender.com/search?q=${encodeURIComponent(query)}`
+      );
 
-    (async () => {
-      try {
-        const videoResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/video/${id}`);
-        const videoData = await videoResponse.json();
-
-        const streamResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/streams/${id}`);
-        const streamData = await streamResponse.json();
-
-        setVideo(videoData);
-        setStream(streamData.best);
-      } catch (error) {
-        console.error("Error fetching video or stream:", error);
-      }
-    })();
-  }, [id]);
-
-  if (!video) return <p>Loading...</p>;
+      const data = await res.json();
+      setResults(data); // backend returns array of search results
+    } catch (error) {
+      console.error("Search failed:", error);
+    }
+  };
 
   return (
-    <div>
-      <Player streamUrl={stream} />
-      <h1>{video.title}</h1>
-      <p>{video.author}</p>
+    <div style={{ padding: "20px" }}>
+      <SearchBar onSearch={handleSearch} />
+
+      <div style={{ marginTop: "20px" }}>
+        {results.length === 0 ? (
+          <p>Search for a video to begin!</p>
+        ) : (
+          results.map((video) => (
+            <VideoCard key={video.id} video={video} />
+          ))
+        )}
+      </div>
     </div>
   );
 }
