@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # or your primary branch name
+      - main
 
 permissions:
   contents: write
@@ -15,24 +15,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1️⃣ Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # 2️⃣ Setup Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # 4️⃣ Build project
       - name: Build project
         run: npm run build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      # 5️⃣ Debug: list dist contents
+      - name: List dist contents
+        run: ls -R dist
+
+      # 6️⃣ Upload artifact for Pages
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
+          artifact_name: github-pages
+          retention-days: 1
 
   deploy:
     needs: build
@@ -41,6 +52,8 @@ jobs:
       name: github-pages
 
     steps:
+      # 1️⃣ Deploy the uploaded artifact
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages
