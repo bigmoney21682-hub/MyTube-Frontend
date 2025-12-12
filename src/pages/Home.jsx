@@ -3,16 +3,22 @@ import { useEffect, useState } from "react";
 import Player from "../components/Player";
 
 export default function Home() {
+  console.log("HOME MOUNTED"); // 👈 ADD THIS LINE
+
   const [video, setVideo] = useState(null);
   const [stream, setStream] = useState("");
 
   useEffect(() => {
     (async () => {
       try {
-        const videoResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/video/test-id`);
+        const videoResponse = await fetch(
+          "https://mytube-backend-xlz4.onrender.com/video/test-id"
+        );
         const videoData = await videoResponse.json();
 
-        const streamResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/streams/test-id`);
+        const streamResponse = await fetch(
+          "https://mytube-backend-xlz4.onrender.com/streams/test-id"
+        );
         const streamData = await streamResponse.json();
 
         setVideo(videoData);
