@@ -1,41 +1,11 @@
-name: Deploy MyTube-Frontend
+// vite.config.js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      # 1. Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 2. Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # 4. Build app
-      - name: Build app
-        run: npm run build
-
-      # 5. Upload artifact for Pages (non-deprecated)
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: ./dist
-
-      # 6. Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+export default defineConfig({
+  base: "/MyTube-Frontend/", // required for GitHub Pages
+  plugins: [react()],
+  build: {
+    outDir: "dist",            // output folder for the production build
+  },
+});
