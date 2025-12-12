@@ -12,13 +12,13 @@ export default function Watch() {
 
     (async () => {
       try {
-        // FETCH METADATA FROM RENDER BACKEND
+        // Fetch video metadata from Render backend
         const videoResponse = await fetch(
           `https://mytube-backend-xlz4.onrender.com/video/${id}`
         );
         const videoData = await videoResponse.json();
 
-        // FETCH STREAM URL
+        // Fetch stream URL from Render backend
         const streamResponse = await fetch(
           `https://mytube-backend-xlz4.onrender.com/streams/${id}`
         );
