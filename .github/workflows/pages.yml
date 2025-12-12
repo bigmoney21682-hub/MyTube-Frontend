@@ -1,59 +1,37 @@
-name: Deploy to GitHub Pages
+name: Deploy MyTube Frontend
 
 on:
   push:
     branches:
-      - main
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+      - main   # or your default branch
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
-      - name: Checkout
+      # 1. Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: "20"
 
-      # 3️⃣ Install dependencies
+      # 3. Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # 4️⃣ Build project
-      - name: Build project
+      # 4. Build the project
+      - name: Build frontend
         run: npm run build
 
-      # 5️⃣ Debug: list dist contents
-      - name: List dist contents
-        run: ls -R dist
-
-      # 6️⃣ Upload artifact for Pages
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: ./dist
-          artifact_name: github-pages
-          retention-days: 1
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-
-    steps:
-      # 1️⃣ Deploy the uploaded artifact
+      # 5. Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           artifact_name: github-pages
+          artifact_path: ./dist
