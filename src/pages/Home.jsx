@@ -1,37 +1,35 @@
 // src/pages/Home.jsx
-import { useState } from "react";
-import SearchBar from "../components/SearchBar";
-import VideoCard from "../components/VideoCard";
+import { useEffect, useState } from "react";
+import Player from "../components/Player";
 
 export default function Home() {
-  const [results, setResults] = useState([]);
+  const [video, setVideo] = useState(null);
+  const [stream, setStream] = useState("");
 
-  const handleSearch = async (query) => {
-    try {
-      const res = await fetch(
-        `https://mytube-backend-xlz4.onrender.com/search?q=${encodeURIComponent(query)}`
-      );
+  useEffect(() => {
+    (async () => {
+      try {
+        const videoResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/video/test-id`);
+        const videoData = await videoResponse.json();
 
-      const data = await res.json();
-      setResults(data); // backend returns array of search results
-    } catch (error) {
-      console.error("Search failed:", error);
-    }
-  };
+        const streamResponse = await fetch(`https://mytube-backend-xlz4.onrender.com/streams/test-id`);
+        const streamData = await streamResponse.json();
+
+        setVideo(videoData);
+        setStream(streamData.best);
+      } catch (error) {
+        console.error("Error fetching video or stream:", error);
+      }
+    })();
+  }, []);
+
+  if (!video) return <p>Loading...</p>;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <SearchBar onSearch={handleSearch} />
-
-      <div style={{ marginTop: "20px" }}>
-        {results.length === 0 ? (
-          <p>Search for a video to begin!</p>
-        ) : (
-          results.map((video) => (
-            <VideoCard key={video.id} video={video} />
-          ))
-        )}
-      </div>
+    <div>
+      <Player streamUrl={stream} />
+      <h1>{video.title}</h1>
+      <p>{video.author}</p>
     </div>
   );
 }
