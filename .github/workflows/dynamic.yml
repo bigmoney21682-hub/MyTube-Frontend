@@ -1,4 +1,4 @@
-name: Build and Test MyTube-Frontend
+name: Dynamic Build & Deploy
 
 on:
   push:
@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout repository
+      # 1. Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -20,14 +20,22 @@ jobs:
         with:
           node-version: 20
 
-      # 3. Install dependencies
+      # 3. Install dependencies (use install instead of ci)
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      # 4. Build app
+      # 4. Build the app
       - name: Build app
         run: npm run build
 
-      # 5. List files in build folder
-      - name: List build folder
-        run: ls -R ./dist
+      # 5. Upload Pages artifact
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./dist
+
+      # 6. Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
