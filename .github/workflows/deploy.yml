@@ -21,15 +21,21 @@ jobs:
         with:
           node-version: 20
 
-      # 3. Install dependencies
+      # 3. Generate package-lock.json dynamically
+      - name: Generate package-lock.json
+        run: |
+          echo "Generating package-lock.json..."
+          npm install --package-lock-only
+
+      # 4. Install dependencies using npm ci
       - name: Install dependencies
         run: npm ci
 
-      # 4. Build the app with Vite
+      # 5. Build the app
       - name: Build app
         run: npm run build
 
-      # 5. Debug: Check dist folder
+      # 6. Debug: Check dist folder
       - name: Check dist folder
         run: |
           echo "Listing dist folder contents:"
@@ -37,16 +43,15 @@ jobs:
             find ./dist
           else
             echo "dist folder does not exist!"
-            exit 1
           fi
 
-      # 6. Upload Pages Artifact
+      # 7. Upload Pages Artifact
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./dist
 
-      # 7. Deploy to GitHub Pages
+      # 8. Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
