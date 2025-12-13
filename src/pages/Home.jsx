@@ -1,21 +1,39 @@
+import { useState } from "react";
+import SearchBar from "../components/SearchBar";
+import VideoCard from "../components/VideoCard";
+
+const API_KEY = "AIzaSyCWx93j-IQ9LiyUrh1rjtiLQEDIe1S-aXs"; // ← Paste your key here
+
 export default function Home() {
+  const [videos, setVideos] = useState([]);
+
+  const handleSearch = async (query) => {
+    try {
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=12&key=${API_KEY}`
+      );
+      const data = await res.json();
+      setVideos(data.items || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(45deg, #ff006e, #fb5607)",
-      color: "white",
-      fontFamily: "system-ui, sans-serif",
-      textAlign: "center",
-      padding: "60px"
-    }}>
-      <h1 style={{ fontSize: "3.5rem" }}>🏠 MyTube Home</h1>
-      <p style={{ fontSize: "2rem" }}>Welcome! Everything works perfectly.</p>
-      <p style={{ fontSize: "1.6rem", marginTop: "50px" }}>
-        Test the player → go to:<br />
-        <a href="#/watch/dQw4w9WgXcQ" style={{ color: "#ffff00", fontSize: "1.8rem" }}>
-          #/watch/dQw4w9WgXcQ
-        </a>
-      </p>
+    <div style={{ minHeight: "100vh", background: "#000", color: "white" }}>
+      <SearchBar onSearch={handleSearch} />
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: "20px",
+        padding: "0 20px",
+        maxWidth: "1400px",
+        margin: "0 auto"
+      }}>
+        {videos.map((video) => (
+          <VideoCard key={video.id.videoId} video={video} />
+        ))}
+      </div>
     </div>
   );
 }
