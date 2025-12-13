@@ -1,68 +1,105 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import RelatedVideos from "../components/RelatedVideos";
 
 export default function Watch() {
   const { id } = useParams();
   const videoId = id || "dQw4w9WgXcQ"; // fallback video
-  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  const [related, setRelated] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Handle orientation change
-  useEffect(() => {
-    const handleResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const API_KEY = "<YOUR_API_KEY_HERE>"; // import from secure location if possible
 
-  // Scroll related videos into view in portrait
+  // Fetch related videos
   useEffect(() => {
-    if (!isLandscape) {
-      const relatedSection = document.getElementById("related-videos");
-      if (relatedSection) {
-        relatedSection.scrollIntoView({ behavior: "smooth" });
+    const fetchRelated = async () => {
+      try {
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=${videoId}&type=video&maxResults=5&key=${API_KEY}`
+        );
+        const data = await response.json();
+
+        if (data.error) {
+          setError(data.error.message);
+          return;
+        }
+
+        setRelated(data.items);
+      } catch (err) {
+        setError("Failed to load related videos");
       }
-    }
-  }, [videoId, isLandscape]);
+    };
+
+    fetchRelated();
+  }, [videoId]);
+
+  // Detect orientation
+  const isPortrait = window.innerHeight > window.innerWidth;
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#000",
-      color: "#fff",
-      display: "flex",
-      flexDirection: isLandscape ? "row" : "column",
-      padding: "20px",
-      boxSizing: "border-box"
-    }}>
-      {/* Video Player */}
-      <div style={{ flex: 2, maxWidth: isLandscape ? "70%" : "100%" }}>
-        <h1 style={{ fontSize: "2rem", marginBottom: "10px" }}>Now Playing</h1>
-        <div style={{ width: "100%", aspectRatio: "16/9" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: isPortrait ? "column" : "row",
+        minHeight: "100vh",
+        background: "#000",
+        color: "#fff",
+      }}
+    >
+      {/* Main video */}
+      <div style={{ flex: 2, padding: "20px", textAlign: "center" }}>
+        <h1 style={{ fontSize: "2rem" }}>Now Playing</h1>
+        <div style={{ maxWidth: "900px", margin: "20px auto" }}>
           <iframe
             width="100%"
-            height="100%"
+            height={isPortrait ? "250px" : "506px"}
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
             title="YouTube video"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-          ></iframe>
+          />
         </div>
-        <a href="#/" style={{ color: "#ff0000", fontSize: "1.2rem", display: "block", marginTop: "15px" }}>
+        <Link to="/" style={{ color: "#ff0000", fontSize: "1.2rem" }}>
           ← Back to Home
-        </a>
+        </Link>
       </div>
 
-      {/* Related Videos */}
+      {/* Related videos */}
       <div
-        id="related-videos"
         style={{
           flex: 1,
-          marginTop: isLandscape ? "0" : "20px",
-          marginLeft: isLandscape ? "20px" : "0",
+          overflowY: "auto",
+          borderLeft: isPortrait ? "none" : "1px solid #444",
+          borderTop: isPortrait ? "1px solid #444" : "none",
+          padding: "10px",
+          background: "#111",
         }}
       >
-        <RelatedVideos videoId={videoId} apiKey={process.env.REACT_APP_YT_API_KEY || "<YOUR_API_KEY>"} />
+        <h2 style={{ textAlign: "center" }}>Related Videos</h2>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {related.map((video) => (
+          <Link
+            key={video.id.videoId}
+            to={`/watch/${video.id.videoId}`}
+            style={{
+              display: "flex",
+              marginBottom: "10px",
+              textDecoration: "none",
+              color: "#fff",
+            }}
+          >
+            <img
+              src={video.snippet.thumbnails.default.url}
+              alt={video.snippet.title}
+              style={{ marginRight: "10px", width: "120px", height: "90px" }}
+            />
+            <div style={{ fontSize: "0.9rem" }}>
+              {video.snippet.title.length > 50
+                ? video.snippet.title.slice(0, 50) + "..."
+                : video.snippet.title}
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
