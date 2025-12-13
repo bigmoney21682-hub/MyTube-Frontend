@@ -9,7 +9,7 @@ const Player = ({ videoId }) => {
     if (!videoId) return;
 
     // Fetch video info from YOUR backend
-    fetch(`https://your-backend.onrender.com/video/${videoId}`)
+    fetch(`https://mytube-backend-xlz4.onrender.com/video/${videoId}`)
       .then(res => res.json())
       .then(data => {
         setVideoData(data);
