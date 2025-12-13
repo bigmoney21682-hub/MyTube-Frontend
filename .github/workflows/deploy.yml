@@ -1,52 +1,46 @@
-name: Deploy MyTube-Frontend
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [main]
+  workflow_dispatch:  # Lets you run it manually too
+
+permissions:
+  contents: read          # Default, keeps it secure
+  pages: write            # Needed to deploy
+  id-token: write         # THIS FIXES YOUR ERROR
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout the repo
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      # 3. Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # 4. Build the app (creates dist/)
-      - name: Build app
+      - name: Build
         run: npm run build
 
-      # 5. Debug: List dist contents
-      - name: Check dist folder
-        run: |
-          echo "Dist folder contents:"
-          if [ -d "./dist" ]; then
-            find ./dist
-          else
-            echo "dist folder does not exist!"
-          fi
-
-      # 6. Upload Pages Artifact
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
-      # 7. Deploy to GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
