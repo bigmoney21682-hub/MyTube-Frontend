@@ -3,5 +3,8 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/MyTube-Frontend/",   // 🔴 REQUIRED for GitHub Pages
+  build: {
+    outDir: "dist", // default output folder for Vite
+  },
+  base: "./", // ensures relative paths so GitHub Pages works
 });
