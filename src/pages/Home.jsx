@@ -1,41 +1,23 @@
-// src/pages/Home.jsx
-import { useEffect, useState } from "react";
-import Player from "../components/Player";
-
 export default function Home() {
-  console.log("HOME MOUNTED"); // 👈 ADD THIS LINE
-
-  const [video, setVideo] = useState(null);
-  const [stream, setStream] = useState("");
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const videoResponse = await fetch(
-          "https://mytube-backend-xlz4.onrender.com/video/test-id"
-        );
-        const videoData = await videoResponse.json();
-
-        const streamResponse = await fetch(
-          "https://mytube-backend-xlz4.onrender.com/streams/test-id"
-        );
-        const streamData = await streamResponse.json();
-
-        setVideo(videoData);
-        setStream(streamData.best);
-      } catch (error) {
-        console.error("Error fetching video or stream:", error);
-      }
-    })();
-  }, []);
-
-  if (!video) return <p>Loading...</p>;
-
   return (
-    <div>
-      <Player streamUrl={stream} />
-      <h1>{video.title}</h1>
-      <p>{video.author}</p>
+    <div style={{
+      padding: "2rem",
+      fontFamily: "system-ui, sans-serif",
+      textAlign: "center",
+      minHeight: "100vh",
+      background: "#f0f0f0"
+    }}>
+      <h1 style={{ fontSize: "3rem", color: "#ff0000" }}>
+        🎉 MyTube is ALIVE! 🎉
+      </h1>
+      <p style={{ fontSize: "1.5rem" }}>
+        Deployment works perfectly!<br />
+        White screen problem = SOLVED
+      </p>
+      <p>
+        Next: Let's play a YouTube video →<br />
+        Go to /#/watch/dQw4w9WgXcQ
+      </p>
     </div>
   );
 }
