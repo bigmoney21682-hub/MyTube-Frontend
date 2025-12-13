@@ -28,6 +28,12 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # 4a. Debug: list dist folder contents
+      - name: List dist contents
+        run: |
+          echo "Contents of ./dist:"
+          ls -R ./dist
+
       # 5. Upload the dist folder
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v2
