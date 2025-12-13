@@ -1,62 +1,43 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function RelatedVideos({ videoId, apiKey }) {
   const [videos, setVideos] = useState([]);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!videoId) return;
-
-    fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=${videoId}&type=video&key=${apiKey}&maxResults=5`)
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to fetch related videos");
-        return res.json();
-      })
-      .then(data => {
-        if (!data.items || data.items.length === 0) {
-          setError("No related videos found.");
-          setVideos([]);
-        } else {
-          setVideos(data.items);
-          setError("");
+    const fetchRelated = async () => {
+      try {
+        const res = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=${videoId}&type=video&maxResults=5&key=${apiKey}`
+        );
+        const data = await res.json();
+        if (data.error) {
+          setError(data.error.message);
+          return;
         }
-      })
-      .catch(() => {
-        setError("Error loading related videos. Please try again.");
-        setVideos([]);
-      });
+        setVideos(data.items || []);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    if (videoId && apiKey) fetchRelated();
   }, [videoId, apiKey]);
 
-  const isLandscape = window.innerWidth > window.innerHeight;
-
-  if (error) {
-    return (
-      <div style={{ color: "#fff", fontSize: "0.9rem", padding: "5px" }}>
-        {error}
-      </div>
-    );
-  }
+  if (error) return <p style={{ color: "red" }}>Error loading related videos: {error}</p>;
+  if (!videos.length) return <p>Loading...</p>;
 
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: isLandscape ? "column" : "row",
-      gap: "10px",
-      overflowX: isLandscape ? "hidden" : "auto",
-      overflowY: isLandscape ? "auto" : "hidden",
-      maxHeight: isLandscape ? "80vh" : "160px",
-    }}>
-      {videos.map(v => (
-        <div
-          key={v.id.videoId}
-          onClick={() => navigate(`/watch/${v.id.videoId}`)}
-          style={{ cursor: "pointer", flex: "0 0 auto", minWidth: isLandscape ? "100%" : "140px" }}
-        >
-          <img src={v.snippet.thumbnails.medium.url} alt={v.snippet.title} width="100%" />
-          <p style={{ color: "#fff", fontSize: "0.8rem" }}>{v.snippet.title}</p>
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+      {videos.map((video) => (
+        <Link key={video.id.videoId} to={`/watch/${video.id.videoId}`} style={{ color: "#fff" }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <img src={video.snippet.thumbnails.default.url} alt={video.snippet.title} />
+            <span>{video.snippet.title}</span>
+          </div>
+        </Link>
       ))}
     </div>
   );
