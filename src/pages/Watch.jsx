@@ -1,106 +1,114 @@
-// File: src/pages/Watch.jsx
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import Player from '../components/Player.jsx';
+import VideoCard from '../components/VideoCard.jsx'; // Optional for related later
 
-export default function Watch() {
-  const { id } = useParams();
-  const videoId = id || "dQw4w9WgXcQ"; // fallback
-  const [relatedVideos, setRelatedVideos] = useState([]);
+const BACKEND_URL = 'https://mytube-backend-xlz4.onrender.com';
+
+const Watch = () => {
+  // Support both /watch/:videoId and /watch?v=ID routes
+  const { videoId: paramId } = useParams(); // for /watch/:videoId
+  const [searchParams] = useSearchParams();
+  const queryId = searchParams.get('v'); // for ?v=ID
+
+  const videoId = paramId || queryId;
+
+  const [videoData, setVideoData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_KEY = "AIzaSyCWx93j-IQ9LiyUrh1rjtiLQEDIe1S-aXs"; // <-- put your API key between quotes
-
   useEffect(() => {
-    async function fetchRelated() {
-      try {
-        const res = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=${videoId}&type=video&maxResults=5&key=${API_KEY}`
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch related videos");
-
-        const data = await res.json();
-        if (data.items) setRelatedVideos(data.items);
-        else setError("No related videos found");
-      } catch (err) {
-        console.error(err);
-        setError("Error loading related videos");
-      }
+    if (!videoId) {
+      setError('No video ID provided');
+      setLoading(false);
+      return;
     }
 
-    fetchRelated();
+    fetch(`${BACKEND_URL}/video/${videoId}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Video not found');
+        return res.json();
+      })
+      .then(data => {
+        setVideoData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
+      });
   }, [videoId]);
 
-  // Detect orientation
-  const isPortrait = window.innerHeight > window.innerWidth;
+  if (!videoId) return <div style={{color: 'white', textAlign: 'center', marginTop: '100px'}}>Invalid video URL</div>;
+  if (loading) return <div style={{color: 'white', textAlign: 'center', marginTop: '100px'}}>Loading video...</div>;
+  if (error) return <div style={{color: 'white', textAlign: 'center', marginTop: '100px'}}>Error: {error}</div>;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: isPortrait ? "column" : "row",
-        minHeight: "100vh",
-        background: "#000",
-        color: "#fff",
-      }}
-    >
-      {/* Video player */}
-      <div style={{ flex: 2, padding: "20px" }}>
-        <h1 style={{ fontSize: "2rem", textAlign: "center" }}>Now Playing</h1>
-        <iframe
-          width="100%"
-          height={isPortrait ? 300 : 506}
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-          title="YouTube video"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
-        <div style={{ textAlign: "center", marginTop: "10px" }}>
-          <Link to="/" style={{ color: "#ff0000", fontSize: "1.2rem" }}>
-            ← Back to Home
-          </Link>
+    <div style={{
+      maxWidth: '1400px',
+      margin: '0 auto',
+      padding: '20px',
+      color: 'white',
+      backgroundColor: '#0f0f0f',
+      minHeight: '100vh'
+    }}>
+      {/* Main Player */}
+      <div style={{ marginBottom: '30px' }}>
+        <Player videoId={videoId} />
+      </div>
+
+      {/* Video Info */}
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{
+          fontSize: '28px',
+          fontWeight: '600',
+          margin: '0 0 12px 0',
+          lineHeight: '1.3'
+        }}>
+          {videoData.title}
+        </h1>
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          color: '#aaa',
+          fontSize: '16px'
+        }}>
+          <span>{videoData.uploader || 'Unknown channel'}</span>
+          <span>•</span>
+          <span>
+            {videoData.view_count ? 
+              `${Number(videoData.view_count).toLocaleString()} views` : 
+              'Views unknown'}
+          </span>
         </div>
       </div>
 
-      {/* Related videos sidebar */}
-      <div
-        style={{
-          flex: 1,
-          padding: "10px",
-          background: "#111",
-          display: "flex",
-          flexDirection: "column",
-          overflowY: "auto",
-          maxHeight: isPortrait ? "200px" : "auto",
-        }}
-      >
-        <h2 style={{ fontSize: "1.5rem", marginBottom: "10px" }}>
-          Related Videos
-        </h2>
-        {error && <p>{error}</p>}
-        {!error && relatedVideos.length === 0 && <p>Loading...</p>}
-        {!error &&
-          relatedVideos.map((video) => (
-            <Link
-              key={video.id.videoId}
-              to={`/watch/${video.id.videoId}`}
-              style={{
-                display: "flex",
-                marginBottom: "10px",
-                textDecoration: "none",
-                color: "#fff",
-              }}
-            >
-              <img
-                src={video.snippet.thumbnails.default.url}
-                alt={video.snippet.title}
-                style={{ marginRight: "10px" }}
-              />
-              <span style={{ flex: 1 }}>{video.snippet.title}</span>
-            </Link>
+      {/* Placeholder for Related Videos (we'll fill this next) */}
+      <div>
+        <h2 style={{ fontSize: '22px', marginBottom: '20px' }}>Related Videos</h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gap: '20px'
+        }}>
+          {/* Temporary placeholder cards */}
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} style={{
+              background: '#1a1a1a',
+              borderRadius: '12px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              Related video {i} coming soon...
+            </div>
           ))}
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default Watch;
