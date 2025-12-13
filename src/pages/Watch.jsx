@@ -7,7 +7,7 @@ export default function Watch() {
   const [related, setRelated] = useState([]);
   const [error, setError] = useState(null);
 
-  const API_KEY = "<YOUR_API_KEY_HERE>"; // import from secure location if possible
+  const API_KEY = "AIzaSyCWx93j-IQ9LiyUrh1rjtiLQEDIe1S-aXs"; // import from secure location if possible
 
   // Fetch related videos
   useEffect(() => {
