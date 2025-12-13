@@ -1,41 +1,30 @@
 name: Deploy MyTube-Frontend
 
 on:
+  workflow_dispatch: # manual trigger
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3. Generate package-lock.json dynamically
-      - name: Generate package-lock.json
-        run: |
-          echo "Generating package-lock.json..."
-          npm install --package-lock-only
-
-      # 4. Install dependencies using npm ci
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      # 5. Build the app
       - name: Build app
         run: npm run build
 
-      # 6. Debug: Check dist folder
       - name: Check dist folder
         run: |
           echo "Listing dist folder contents:"
@@ -45,13 +34,11 @@ jobs:
             echo "dist folder does not exist!"
           fi
 
-      # 7. Upload Pages Artifact
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./dist
 
-      # 8. Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
