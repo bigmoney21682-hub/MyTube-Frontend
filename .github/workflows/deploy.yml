@@ -1,16 +1,17 @@
 name: Deploy MyTube-Frontend
 
 on:
+  workflow_dispatch:   # Manual trigger
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - main        # Trigger only on main branch
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      # 1. Checkout repository
+      # 1. Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
