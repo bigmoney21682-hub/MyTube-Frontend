@@ -1,16 +1,11 @@
-import { useLocation } from 'react-router-dom'; // Only need useLocation for hash
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Player from '../components/Player.jsx';
 
 const BACKEND_URL = 'https://mytube-backend-xlz4.onrender.com';
 
 const Watch = () => {
-  const location = useLocation();
-
-  // Parse videoId from hash like #/watch/dqmJN5z6Rjc
-  const match = location.hash.match(/^#\/watch\/([a-zA-Z0-9_-]{11})$/);
-  const videoId = match ? match[1] : null;
-
+  const { videoId } = useParams();
   const [videoData, setVideoData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,22 +33,24 @@ const Watch = () => {
         setError(err.message || 'Failed to load video');
         setLoading(false);
       });
-  }, [videoId, location]); // Re-run if location changes
+  }, [videoId]);
 
   if (loading) {
-    return <div style={{ color: 'white', textAlign: 'center', padding: '100px', background: '#0f0f0f' }}>
-      <h2>Loading video...</h2>
-      <p>(First load may take 20–30s while backend wakes up)</p>
-    </div>;
+    return (
+      <div style={{ color: 'white', textAlign: 'center', padding: '100px', background: '#0f0f0f' }}>
+        <h2>Loading video...</h2>
+        <p>(First load may take 20–30s while backend wakes up)</p>
+      </div>
+    );
   }
 
   if (error || !videoId) {
-    return <div style={{ color: 'white', textAlign: 'center', padding: '50px', background: '#0f0f0f' }}>
-      <h2 style={{ color: '#ff5555' }}>Error</h2>
-      <p>{error || 'No video ID in URL'}</p>
-      <p>Current URL hash: {location.hash || 'none'}</p>
-      <p>Backend: <a href={BACKEND_URL} style={{ color: '#1e90ff' }}>{BACKEND_URL}</a></p>
-    </div>;
+    return (
+      <div style={{ color: 'white', textAlign: 'center', padding: '50px', background: '#0f0f0f' }}>
+        <h2 style={{ color: '#ff5555' }}>Error</h2>
+        <p>{error || 'No video ID in URL'}</p>
+      </div>
+    );
   }
 
   return (
@@ -61,7 +58,6 @@ const Watch = () => {
       <div style={{ marginBottom: '30px' }}>
         <Player videoId={videoId} />
       </div>
-
       <h1 style={{ fontSize: '28px' }}>{videoData?.title || 'Untitled'}</h1>
       <p style={{ color: '#aaa' }}>{videoData?.uploader || 'Unknown'}</p>
     </div>
