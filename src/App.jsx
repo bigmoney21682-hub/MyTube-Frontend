@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Watch from './pages/Watch';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home.jsx";
+import Watch from "./pages/Watch.jsx";
 
 function App() {
   return (
@@ -12,3 +12,5 @@ function App() {
     </Router>
   );
 }
+
+export default App;
