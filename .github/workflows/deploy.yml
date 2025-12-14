@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]          # Change if your default branch is different
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -25,17 +25,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm               # Faster installs on repeat runs
+          cache: npm
 
       - name: Install dependencies
-        run: npm ci                 # Use npm ci instead of npm install (more reliable in CI)
+        run: npm ci
 
       - name: Build
         run: npm run build
         env:
-          CI: false                 # Keeps your current setting (disables treaty warnings if needed)
+          CI: false
 
-      - name: Copy index.html to 404.html (Fix React Router routing)
+      - name: Copy index.html to 404.html (Fix routing)
         run: cp dist/index.html dist/404.html
 
       - name: Upload artifact
