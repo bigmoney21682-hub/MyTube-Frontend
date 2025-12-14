@@ -8,16 +8,6 @@ export default function Home() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async (query) from "react";
-import SearchBar from "../components/SearchBar";
-import VideoCard from "../components/VideoCard";
-
-const BACKEND_URL = "https://mytube-backend-xlz4.onrender.com";
-
-export default function Home() {
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(false);
-
   const handleSearch = async (query) => {
     if (!query.trim()) return;
 
