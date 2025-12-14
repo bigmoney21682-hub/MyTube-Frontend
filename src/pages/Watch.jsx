@@ -7,23 +7,37 @@ export default function Watch() {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
   const [stream, setStream] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`${API_BASE}/video?id=${id}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`${API_BASE}/video?id=${id}`);
+        const data = await res.json();
 
-      setVideo(data);
+        if (!data || !Array.isArray(data.formats)) {
+          throw new Error("Invalid video data");
+        }
 
-      // pick best progressive mp4 ≤1080p
-      const best = data.formats
-        .filter(f => f.ext === "mp4" && f.vcodec !== "none")
-        .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+        setVideo(data);
 
-      if (best?.url) setStream(best.url);
+        const best = data.formats
+          .filter(f => f.ext === "mp4" && f.vcodec !== "none")
+          .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+
+        if (!best?.url) {
+          throw new Error("No playable stream found");
+        }
+
+        setStream(best.url);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      }
     })();
   }, [id]);
 
+  if (error) return <p>Error: {error}</p>;
   if (!video) return <p>Loading...</p>;
 
   return (
