@@ -1,11 +1,12 @@
-import { Link } from 'react-router-dom'; // Make sure you have react-router-dom installed
+import { Link } from 'react-router-dom';
 
 export default function VideoCard({ video }) {
-  // Your backend returns: { id, title, thumbnail, uploader, duration }
-  const videoId = video.id;
-  const title = video.title || 'Untitled';
-  const thumbnail = video.thumbnail || '';
-  const uploader = video.uploader || 'Unknown';
+  const videoId = video.id || video.id?.videoId; // Support both formats temporarily
+  const title = video.title || video.snippet?.title || 'Untitled';
+  const thumbnail = video.thumbnail || video.snippet?.thumbnails?.medium?.url || '';
+  const uploader = video.uploader || video.snippet?.channelTitle || 'Unknown';
+
+  if (!videoId) return null; // Safety
 
   return (
     <Link to={`/watch/${videoId}`} style={{ textDecoration: "none", color: "inherit" }}>
