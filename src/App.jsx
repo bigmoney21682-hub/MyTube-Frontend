@@ -1,16 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Watch from "./pages/Watch.jsx";
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/watch/:videoId" element={<Watch />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/watch/:videoId" element={<Watch />} />
+    </Routes>
   );
 }
-
-export default App;
