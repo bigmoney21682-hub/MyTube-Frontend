@@ -1,4 +1,4 @@
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom'; // Only need useLocation for hash
 import { useEffect, useState } from 'react';
 import Player from '../components/Player.jsx';
 
@@ -6,16 +6,10 @@ const BACKEND_URL = 'https://mytube-backend-xlz4.onrender.com';
 
 const Watch = () => {
   const location = useLocation();
-  const [searchParams] = useSearchParams();
 
-  // Parse from hash #/watch/dQw4w9WgXcQ
-  const hash = location.hash; // e.g. "#/watch/dQw4w9WgXcQ"
-  const videoIdFromHash = hash.startsWith('#/watch/') ? hash.slice(8) : null;
-
-  // Fallback for ?v=ID
-  const videoIdFromQuery = searchParams.get('v');
-
-  const videoId = videoIdFromHash || videoIdFromQuery;
+  // Parse videoId from hash like #/watch/dqmJN5z6Rjc
+  const match = location.hash.match(/^#\/watch\/([a-zA-Z0-9_-]{11})$/);
+  const videoId = match ? match[1] : null;
 
   const [videoData, setVideoData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +38,7 @@ const Watch = () => {
         setError(err.message || 'Failed to load video');
         setLoading(false);
       });
-  }, [videoId]);
+  }, [videoId, location]); // Re-run if location changes
 
   if (loading) {
     return <div style={{ color: 'white', textAlign: 'center', padding: '100px', background: '#0f0f0f' }}>
@@ -53,10 +47,11 @@ const Watch = () => {
     </div>;
   }
 
-  if (error) {
+  if (error || !videoId) {
     return <div style={{ color: 'white', textAlign: 'center', padding: '50px', background: '#0f0f0f' }}>
       <h2 style={{ color: '#ff5555' }}>Error</h2>
-      <p>{error}</p>
+      <p>{error || 'No video ID in URL'}</p>
+      <p>Current URL hash: {location.hash || 'none'}</p>
       <p>Backend: <a href={BACKEND_URL} style={{ color: '#1e90ff' }}>{BACKEND_URL}</a></p>
     </div>;
   }
@@ -69,11 +64,6 @@ const Watch = () => {
 
       <h1 style={{ fontSize: '28px' }}>{videoData?.title || 'Untitled'}</h1>
       <p style={{ color: '#aaa' }}>{videoData?.uploader || 'Unknown'}</p>
-
-      <div style={{ marginTop: '50px' }}>
-        <h2>Related Videos</h2>
-        <p>Coming soon...</p>
-      </div>
     </div>
   );
 };
