@@ -1,67 +1,35 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import Player from '../components/Player.jsx';
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Player from "../components/Player";
+import { API_BASE } from "../config";
 
-const BACKEND_URL = 'https://mytube-backend-xlz4.onrender.com';
-
-const Watch = () => {
-  const { videoId } = useParams();
-  const [videoData, setVideoData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default function Watch() {
+  const { id } = useParams();
+  const [video, setVideo] = useState(null);
+  const [stream, setStream] = useState("");
 
   useEffect(() => {
-    if (!videoId) {
-      setError('No video ID in URL');
-      setLoading(false);
-      return;
-    }
+    (async () => {
+      const res = await fetch(`${API_BASE}/video?id=${id}`);
+      const data = await res.json();
 
-    setLoading(true);
-    setError(null);
+      setVideo(data);
 
-    fetch(`${BACKEND_URL}/video/${videoId}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        setVideoData(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message || 'Failed to load video');
-        setLoading(false);
-      });
-  }, [videoId]);
+      // pick best progressive mp4 ≤1080p
+      const best = data.formats
+        .filter(f => f.ext === "mp4" && f.vcodec !== "none")
+        .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
 
-  if (loading) {
-    return (
-      <div style={{ color: 'white', textAlign: 'center', padding: '100px', background: '#0f0f0f' }}>
-        <h2>Loading video...</h2>
-        <p>(First load may take 20–30s while backend wakes up)</p>
-      </div>
-    );
-  }
+      if (best?.url) setStream(best.url);
+    })();
+  }, [id]);
 
-  if (error || !videoId) {
-    return (
-      <div style={{ color: 'white', textAlign: 'center', padding: '50px', background: '#0f0f0f' }}>
-        <h2 style={{ color: '#ff5555' }}>Error</h2>
-        <p>{error || 'No video ID in URL'}</p>
-      </div>
-    );
-  }
+  if (!video) return <p>Loading...</p>;
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px', color: 'white', background: '#0f0f0f' }}>
-      <div style={{ marginBottom: '30px' }}>
-        <Player videoId={videoId} />
-      </div>
-      <h1 style={{ fontSize: '28px' }}>{videoData?.title || 'Untitled'}</h1>
-      <p style={{ color: '#aaa' }}>{videoData?.uploader || 'Unknown'}</p>
+    <div>
+      <h2>{video.title}</h2>
+      <Player src={stream} />
     </div>
   );
-};
-
-export default Watch;
+}
