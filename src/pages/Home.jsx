@@ -13,9 +13,9 @@ export default function Home() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/search?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`${BACKEND_URL}/search?q=${encodeURIComponent(query)}&limit=12`);
       if (!res.ok) throw new Error("Search failed");
-      const data = await res.json();  // Array of { id, title, thumbnail, uploader, duration }
+      const data = await res.json();
       setVideos(data);
     } catch (err) {
       console.error(err);
@@ -29,23 +29,13 @@ export default function Home() {
     <div style={{ minHeight: "100vh", background: "#000", color: "white" }}>
       <SearchBar onSearch={handleSearch} />
 
-      {loading && (
-        <div style={{ textAlign: "center", padding: "50px" }}>
-          <p>Loading results...</p>
-        </div>
-      )}
-
-      {!loading && videos.length === 0 && (
-        <div style={{ textAlign: "center", padding: "50px" }}>
-          <p>No results — try searching something!</p>
-        </div>
-      )}
+      {loading && <p style={{ textAlign: "center" }}>Loading results...</p>}
 
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
         gap: "20px",
-        padding: "0 20px",
+        padding: "20px",
         maxWidth: "1400px",
         margin: "0 auto"
       }}>
