@@ -1,15 +1,14 @@
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Player from '../components/Player.jsx';
-import VideoCard from '../components/VideoCard.jsx'; // Optional for related later
 
 const BACKEND_URL = 'https://mytube-backend-xlz4.onrender.com';
 
 const Watch = () => {
-  // Support both /watch/:videoId and /watch?v=ID routes
-  const { videoId: paramId } = useParams(); // for /watch/:videoId
+  // Support /watch/:videoId and /watch?v=ID
+  const { videoId: paramId } = useParams();
   const [searchParams] = useSearchParams();
-  const queryId = searchParams.get('v'); // for ?v=ID
+  const queryId = searchParams.get('v');
 
   const videoId = paramId || queryId;
 
@@ -19,14 +18,19 @@ const Watch = () => {
 
   useEffect(() => {
     if (!videoId) {
-      setError('No video ID provided');
+      setError('No video ID in URL');
       setLoading(false);
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     fetch(`${BACKEND_URL}/video/${videoId}`)
       .then(res => {
-        if (!res.ok) throw new Error('Video not found');
+        if (!res.ok) {
+          throw new Error(`Backend error: ${res.status} ${res.statusText}`);
+        }
         return res.json();
       })
       .then(data => {
@@ -34,16 +38,40 @@ const Watch = () => {
         setLoading(false);
       })
       .catch(err => {
-        console.error(err);
-        setError(err.message);
+        console.error('Fetch failed:', err);
+        setError(err.message || 'Failed to load video data');
         setLoading(false);
       });
   }, [videoId]);
 
-  if (!videoId) return <div style={{color: 'white', textAlign: 'center', marginTop: '100px'}}>Invalid video URL</div>;
-  if (loading) return <div style={{color: 'white', textAlign: 'center', marginTop: '100px'}}>Loading video...</div>;
-  if (error) return <div style={{color: 'white', textAlign: 'center', marginTop: '100px'}}>Error: {error}</div>;
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ color: 'white', textAlign: 'center', padding: '100px 20px', background: '#0f0f0f', minHeight: '100vh' }}>
+        <h2>Loading video...</h2>
+        <p>(First load may take 20–30s if backend is asleep on Render free tier)</p>
+      </div>
+    );
+  }
 
+  // Error state – shows clear message
+  if (error) {
+    return (
+      <div style={{ color: 'white', textAlign: 'center', padding: '50px 20px', background: '#0f0f0f', minHeight: '100vh' }}>
+        <h2 style={{ color: '#ff5555' }}>Error Loading Video</h2>
+        <p style={{ fontSize: '18px', margin: '20px 0' }}>{error}</p>
+        <p>
+          Check backend status: {' '}
+          <a href={BACKEND_URL} style={{ color: '#1e90ff' }} target="_blank" rel="noopener noreferrer">
+            {BACKEND_URL}
+          </a>
+        </p>
+        <p>Try refreshing or waiting 30s (Render free tier spins down).</p>
+      </div>
+    );
+  }
+
+  // Success – video data loaded
   return (
     <div style={{
       maxWidth: '1400px',
@@ -53,8 +81,8 @@ const Watch = () => {
       backgroundColor: '#0f0f0f',
       minHeight: '100vh'
     }}>
-      {/* Main Player */}
-      <div style={{ marginBottom: '30px' }}>
+      {/* Player */}
+      <div style={{ marginBottom: '30px', borderRadius: '12px', overflow: 'hidden' }}>
         <Player videoId={videoId} />
       </div>
 
@@ -66,7 +94,7 @@ const Watch = () => {
           margin: '0 0 12px 0',
           lineHeight: '1.3'
         }}>
-          {videoData.title}
+          {videoData?.title || 'Untitled Video'}
         </h1>
 
         <div style={{
@@ -76,36 +104,20 @@ const Watch = () => {
           color: '#aaa',
           fontSize: '16px'
         }}>
-          <span>{videoData.uploader || 'Unknown channel'}</span>
-          <span>•</span>
-          <span>
-            {videoData.view_count ? 
-              `${Number(videoData.view_count).toLocaleString()} views` : 
-              'Views unknown'}
-          </span>
+          <span>{videoData?.uploader || 'Unknown channel'}</span>
+          {videoData?.view_count && (
+            <>
+              <span>•</span>
+              <span>{Number(videoData.view_count).toLocaleString()} views</span>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Placeholder for Related Videos (we'll fill this next) */}
+      {/* Placeholder for Related Videos */}
       <div>
         <h2 style={{ fontSize: '22px', marginBottom: '20px' }}>Related Videos</h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '20px'
-        }}>
-          {/* Temporary placeholder cards */}
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} style={{
-              background: '#1a1a1a',
-              borderRadius: '12px',
-              padding: '16px',
-              textAlign: 'center'
-            }}>
-              Related video {i} coming soon...
-            </div>
-          ))}
-        </div>
+        <p style={{ color: '#888' }}>Coming soon after player is stable...</p>
       </div>
     </div>
   );
