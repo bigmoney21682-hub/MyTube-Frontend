@@ -1,17 +1,23 @@
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom'; // Add useLocation
 import { useEffect, useState } from 'react';
 import Player from '../components/Player.jsx';
 
 const BACKEND_URL = 'https://mytube-backend-xlz4.onrender.com';
 
 const Watch = () => {
-  // Support /watch/:videoId and /watch?v=ID
-  const { videoId: paramId } = useParams();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+
+  // Parse videoId from hash path like #/watch/dQw4w9WgXcQ
+  const hashPath = location.hash; // e.g., "#/watch/dQw4w9WgXcQ"
+  const videoIdFromHash = hashPath.startsWith('#/watch/') ? hashPath.slice(8) : null;
+
+  // Fallback for ?v= if needed
   const queryId = searchParams.get('v');
 
-  const videoId = paramId || queryId;
+  const videoId = videoIdFromHash || queryId;
 
+  // Rest of your code is the same (fetch, loading, error, success)
   const [videoData, setVideoData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,7 +50,6 @@ const Watch = () => {
       });
   }, [videoId]);
 
-  // Loading state
   if (loading) {
     return (
       <div style={{ color: 'white', textAlign: 'center', padding: '100px 20px', background: '#0f0f0f', minHeight: '100vh' }}>
@@ -54,7 +59,6 @@ const Watch = () => {
     );
   }
 
-  // Error state – shows clear message
   if (error) {
     return (
       <div style={{ color: 'white', textAlign: 'center', padding: '50px 20px', background: '#0f0f0f', minHeight: '100vh' }}>
@@ -71,7 +75,6 @@ const Watch = () => {
     );
   }
 
-  // Success – video data loaded
   return (
     <div style={{
       maxWidth: '1400px',
@@ -81,12 +84,10 @@ const Watch = () => {
       backgroundColor: '#0f0f0f',
       minHeight: '100vh'
     }}>
-      {/* Player */}
       <div style={{ marginBottom: '30px', borderRadius: '12px', overflow: 'hidden' }}>
         <Player videoId={videoId} />
       </div>
 
-      {/* Video Info */}
       <div style={{ marginBottom: '40px' }}>
         <h1 style={{
           fontSize: '28px',
@@ -108,16 +109,15 @@ const Watch = () => {
           {videoData?.view_count && (
             <>
               <span>•</span>
-              <span>{Number(videoData.view_count).toLocaleString()} views</span>
+              <span>{Number(videoData?.view_count).toLocaleString()} views</span>
             </>
           )}
         </div>
       </div>
 
-      {/* Placeholder for Related Videos */}
       <div>
         <h2 style={{ fontSize: '22px', marginBottom: '20px' }}>Related Videos</h2>
-        <p style={{ color: '#888' }}>Coming soon after player is stable...</p>
+        <p style={{ color: '#888' }}>Coming soon...</p>
       </div>
     </div>
   );
