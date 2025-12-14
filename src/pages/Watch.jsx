@@ -10,6 +10,11 @@ export default function Watch() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!id) {
+      setError("Missing video ID");
+      return;
+    }
+
     (async () => {
       try {
         const res = await fetch(`${API_BASE}/video?id=${id}`);
