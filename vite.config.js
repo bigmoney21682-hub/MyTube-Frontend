@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/MyTube-Frontend/',
+  // No base – default '/' works for project sites
 })
