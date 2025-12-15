@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <div>
       <div className="banner">
-        <h1>MyTube</h1>
+        <h1>🔥🔥MyTube🔥🔥</h1>
         <p>Ad-free, premium, ultra-fast streaming</p>
       </div>
 
@@ -56,7 +56,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <h3 style={{ padding: "1rem" }}>🔥 Trending</h3>
+          <h3 style={{ padding: "1rem" }}>🌿👀🌿Trending</h3>
           <div className="grid">
             {trending.map(v => (
               <VideoCard key={v.id} video={v} />
