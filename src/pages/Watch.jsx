@@ -12,27 +12,41 @@ export default function Watch() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!id) return setError("No video ID provided");
+
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/video?id=${id}`);
+        const res = await fetch(`${API_BASE}/video?id=${encodeURIComponent(id)}`);
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
         const data = await res.json();
 
         if (!data || !Array.isArray(data.formats)) throw new Error("Invalid video data");
 
         setVideo(data);
 
+        // Pick the best mobile-friendly stream
         const best = data.formats
-          .filter(f => f.ext === "mp4" && f.vcodec !== "none" && (f.height || 0) <= 720) // mobile-friendly
+          .filter(f => f.ext === "mp4" && f.vcodec !== "none" && (f.height || 0) <= 720)
           .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
 
         if (!best?.url) throw new Error("No playable stream found");
 
+        // Make sure it's a valid URL
+        try {
+          new URL(best.url);
+        } catch {
+          throw new Error("Stream URL is invalid");
+        }
+
         setStream(best.url);
 
         // Fetch related videos
-        const rel = await fetch(`${API_BASE}/related?id=${id}`);
-        const relData = await rel.json();
-        setRelated(relData);
+        const rel = await fetch(`${API_BASE}/related?id=${encodeURIComponent(id)}`);
+        if (rel.ok) {
+          const relData = await rel.json();
+          setRelated(relData);
+        }
 
       } catch (err) {
         console.error(err);
@@ -48,16 +62,14 @@ export default function Watch() {
     <div>
       <div className="player-container">
         <h2>{video.title}</h2>
-        <Player src={stream} />
+        {stream ? <Player src={stream} /> : <p>Loading stream...</p>}
       </div>
 
       {related.length > 0 && (
         <div className="related-videos">
           <h3>Related Videos</h3>
           <div className="grid">
-            {related.map(v => (
-              <VideoCard key={v.id} video={v} />
-            ))}
+            {related.map(v => v.id && <VideoCard key={v.id} video={v} />)}
           </div>
         </div>
       )}
