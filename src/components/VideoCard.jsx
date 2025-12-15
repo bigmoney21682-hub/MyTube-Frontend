@@ -1,3 +1,4 @@
+// src/components/VideoCard.jsx
 import { useNavigate } from "react-router-dom";
 
 export default function VideoCard({ video }) {
@@ -8,7 +9,11 @@ export default function VideoCard({ video }) {
   };
 
   return (
-    <div className="video-card" onClick={handleClick} style={{ cursor: "pointer" }}>
+    <div
+      className="video-card"
+      onClick={handleClick}
+      style={{ cursor: "pointer" }}
+    >
       <img src={video.thumbnail} alt={video.title} />
       <h4>{video.title}</h4>
       <p style={{ fontSize: "0.8rem", color: "#ccc" }}>
