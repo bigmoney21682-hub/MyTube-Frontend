@@ -1,32 +1,27 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function VideoCard({ video }) {
-  if (!video?.id) return null;
+  const navigate = useNavigate();
 
   return (
-    <Link
-      to={`/watch/${video.id}`}
+    <div
       className="video-card"
-      style={{ textDecoration: "none", color: "inherit" }}
+      onClick={() => navigate(`/watch/${video.id}`)}
     >
       <img
         src={video.thumbnail}
         alt={video.title}
         loading="lazy"
+        onError={e => {
+          e.target.onerror = null;
+          e.target.src = "/fallback.jpg";
+        }}
       />
 
       <div style={{ padding: "0.5rem" }}>
-        <h4 style={{ fontSize: "0.9rem", margin: "0.25rem 0" }}>
-          {video.title}
-        </h4>
-
-        <p style={{ fontSize: "0.75rem", color: "#aaa" }}>
-          {video.uploader} •{" "}
-          {video.view_count
-            ? `${Math.floor(video.view_count / 1_000)}K views`
-            : ""}
-        </p>
+        <h4>{video.title}</h4>
+        <p>{video.uploader}</p>
       </div>
-    </Link>
+    </div>
   );
 }
