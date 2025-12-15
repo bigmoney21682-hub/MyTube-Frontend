@@ -19,7 +19,7 @@ export default function Watch() {
       if (!data || !Array.isArray(data.formats)) throw new Error("Invalid video data");
 
       const best = data.formats
-        .filter(f => f.ext === "mp4" && f.vcodec !== "none" && (f.height || 0) <= 720)
+        .filter(f => f.ext === "mp4" && f.vcodec !== "none" && (f.height || 0) <= 480)
         .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
 
       if (!best?.url) throw new Error("No playable stream found");
