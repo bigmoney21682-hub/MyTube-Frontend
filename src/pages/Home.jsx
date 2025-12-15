@@ -1,16 +1,49 @@
-import { useState, useEffect, useRef } from "react";
+// src/pages/Home.jsx
+import { useState, useEffect } from "react";
 import SearchBar from "../components/SearchBar";
 import VideoCard from "../components/VideoCard";
+import Player from "../components/Player";
 import { API_BASE } from "../config";
 
 export default function Home() {
   const [videos, setVideos] = useState([]);
-  const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [trendingPage, setTrendingPage] = useState(1);
-  const trendingRef = useRef(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [trending, setTrending] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  // Search function
+  // Fetch trending videos
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/trending?page=${page}`);
+        const data = await res.json();
+        setTrending(prev => [...prev, ...data]);
+      } catch (err) {
+        console.error("Trending fetch failed", err);
+      }
+    })();
+  }, [page]);
+
+  // Infinite scroll for trending
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 300
+      ) {
+        if (!loadingMore) {
+          setLoadingMore(true);
+          setPage(prev => prev + 1);
+          setLoadingMore(false);
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loadingMore]);
+
   async function search(q) {
     if (!q) return;
     setLoading(true);
@@ -25,32 +58,6 @@ export default function Home() {
     }
   }
 
-  // Load trending
-  async function loadTrending(page = 1) {
-    try {
-      const res = await fetch(`${API_BASE}/trending?page=${page}`);
-      const data = await res.json();
-      setTrending(prev => [...prev, ...data]);
-      setTrendingPage(page + 1);
-    } catch (err) {
-      console.error("Trending load failed", err);
-    }
-  }
-
-  // Infinite scroll
-  useEffect(() => {
-    loadTrending();
-    function handleScroll() {
-      if (!trendingRef.current) return;
-      const rect = trendingRef.current.getBoundingClientRect();
-      if (rect.bottom - window.innerHeight < 100) {
-        loadTrending(trendingPage);
-      }
-    }
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [trendingPage]);
-
   return (
     <div>
       <div className="banner">
@@ -59,15 +66,36 @@ export default function Home() {
       </div>
 
       <SearchBar onSearch={search} />
-      {loading && <p>Loading...</p>}
 
-      <div className="grid">
-        {videos.map(v => <VideoCard key={v.id} video={v} />)}
-      </div>
+      <div className="home-layout">
+        <div className="player-container">
+          {selectedVideo ? (
+            <>
+              <h2>{selectedVideo.title}</h2>
+              <Player src={selectedVideo.stream} />
+            </>
+          ) : (
+            <p style={{ padding: "1rem" }}>Select a trending video to play</p>
+          )}
+        </div>
 
-      <h2>Trending</h2>
-      <div className="grid" ref={trendingRef}>
-        {trending.map(v => <VideoCard key={v.id} video={v} />)}
+        <div className="trending-videos">
+          <h3>Trending Videos</h3>
+          <div className="grid">
+            {trending.map(v => (
+              <div
+                key={v.id}
+                onClick={() =>
+                  setSelectedVideo({ ...v, stream: v.formats[0]?.url })
+                }
+                style={{ cursor: "pointer" }}
+              >
+                <VideoCard video={v} />
+              </div>
+            ))}
+          </div>
+          {loadingMore && <p>Loading more...</p>}
+        </div>
       </div>
     </div>
   );
