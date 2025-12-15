@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 
 export default function VideoCard({ video }) {
+  if (!video?.id) return null; // safeguard
+
   return (
     <Link to={`/watch/${video.id}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div className="video-card">
