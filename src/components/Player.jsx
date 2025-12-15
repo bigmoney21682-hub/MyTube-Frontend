@@ -7,12 +7,9 @@ export default function Player({ src, onEnded }) {
       controls
       autoPlay
       playsInline
+      preload="metadata"
       onEnded={onEnded}
-      style={{
-        width: "100%",
-        borderRadius: "10px",
-        background: "#000"
-      }}
+      style={{ width: "100%", background: "#000" }}
     />
   );
 }
