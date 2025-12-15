@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SearchBar from "../components/SearchBar";
 import VideoCard from "../components/VideoCard";
 import { API_BASE } from "../config";
@@ -9,7 +9,6 @@ export default function Home() {
 
   async function search(q) {
     if (!q) return;
-
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
@@ -24,6 +23,11 @@ export default function Home() {
 
   return (
     <div>
+      <div className="banner">
+        <h1>MyTube GOD MODE</h1>
+        <p>Ad-free, premium, ultra-fast streaming</p>
+      </div>
+
       <SearchBar onSearch={search} />
 
       {loading && <p>Loading...</p>}
