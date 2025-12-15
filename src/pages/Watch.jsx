@@ -6,6 +6,7 @@ import { API_BASE } from "../config";
 
 export default function Watch() {
   const { id } = useParams();
+
   const [video, setVideo] = useState(null);
   const [stream, setStream] = useState("");
   const [related, setRelated] = useState([]);
@@ -19,32 +20,43 @@ export default function Watch() {
         setError("");
         setVideo(null);
         setStream("");
+        setRelated([]);
 
-        /* ================= VIDEO ================= */
+        /* ========== VIDEO ========== */
         const res = await fetch(`${API_BASE}/video?id=${id}`);
-        if (!res.ok) throw new Error("Failed to load video");
+        if (!res.ok) throw new Error("Video unavailable");
+
         const data = await res.json();
-        if (!data || !Array.isArray(data.formats)) throw new Error("Invalid video data");
+        if (!data?.formats) throw new Error("Invalid video data");
         if (cancelled) return;
 
         setVideo(data);
 
-        const best = data.formats
-          .filter(f => f.ext === "mp4" && f.vcodec !== "none" && (f.height || 0) <= 720)
-          .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+        const candidates = data.formats
+          .filter(f =>
+            f.url &&
+            f.vcodec !== "none" &&
+            (f.ext === "mp4" || f.ext === "webm")
+          )
+          .sort((a, b) => (b.height || 0) - (a.height || 0));
 
-        if (!best?.url) throw new Error("No playable stream found");
-        setStream(best.url);
+        if (!candidates.length) {
+          throw new Error("No playable stream");
+        }
 
-        /* ================= RELATED ================= */
+        setStream(candidates[0].url);
+
+        /* ========== RELATED (NON-BLOCKING) ========== */
         try {
           const rel = await fetch(`${API_BASE}/related?id=${id}`);
           if (rel.ok) {
             const relData = await rel.json();
-            if (!cancelled && Array.isArray(relData)) setRelated(relData);
+            if (!cancelled && Array.isArray(relData)) {
+              setRelated(relData);
+            }
           }
         } catch {
-          setRelated([]);
+          /* silently ignore */
         }
 
       } catch (err) {
@@ -58,8 +70,19 @@ export default function Watch() {
     };
   }, [id]);
 
-  if (error) return <p style={{ padding: "1rem" }}>Error: {error}</p>;
-  if (!video) return <p style={{ padding: "1rem" }}>Loading...</p>;
+  /* ========== UI STATES ========== */
+
+  if (error) {
+    return (
+      <p style={{ padding: "1rem", color: "#f88" }}>
+        This video can’t be played. Try another one.
+      </p>
+    );
+  }
+
+  if (!video) {
+    return <p style={{ padding: "1rem" }}>Loading...</p>;
+  }
 
   return (
     <div>
