@@ -1,12 +1,14 @@
-export default function Player({ videoId }) {
+export default function Player({ src }) {
   return (
-    <iframe
-      width="100%"
-      height="400"
-      src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-      frameBorder="0"
-      allow="autoplay; encrypted-media"
-      allowFullScreen
+    <video
+      src={src}
+      controls
+      autoPlay
+      style={{
+        width: "100%",
+        borderRadius: "8px",
+        backgroundColor: "#000"
+      }}
     />
   );
 }
