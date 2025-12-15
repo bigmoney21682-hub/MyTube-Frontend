@@ -20,22 +20,22 @@ a {
 
 /* ========== BANNER ========== */
 .banner {
-  padding: 1.5rem 1rem;
+  background: linear-gradient(135deg, #000 60%, #111);
+  padding: 1.2rem;
   text-align: center;
-  background: linear-gradient(135deg, #ff8c00, #ff4500);
-  color: #000;
+  border-bottom: 1px solid #222;
 }
 
 .banner h1 {
-  margin: 0;
+  color: #ff9800;
   font-size: 1.8rem;
-  font-weight: 800;
+  margin: 0;
 }
 
 .banner p {
-  margin: 0.25rem 0 0;
-  font-size: 0.95rem;
-  font-weight: 500;
+  color: #bbb;
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
 }
 
 /* ========== GRID ========== */
