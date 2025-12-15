@@ -32,18 +32,11 @@ export default function Watch() {
 
         setVideo(data);
 
-    const candidates = data.formats
-  .filter(f =>
-    f.url &&
-    f.vcodec !== "none" &&
-    f.acodec !== "none" &&        // <-- ADDED: must have audio
-    (f.ext === "mp4" || f.ext === "webm")
-  )
+  const candidates = data.formats
+  .filter(f => f.url && (f.ext === "mp4" || f.ext === "webm"))
   .sort((a, b) => (b.height || 0) - (a.height || 0));
 
-if (!candidates.length) {
-  throw new Error("No playable stream found with audio+video");
-}
+if (!candidates.length) throw new Error("No playable stream found");
 
 setStream(candidates[0].url);
 
