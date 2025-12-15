@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <div>
       <div className="banner">
-        <h1>MyTube GOD MODE</h1>
+        <h1>MyTube</h1>
         <p>Ad-free, premium, ultra-fast streaming</p>
       </div>
 
