@@ -9,9 +9,22 @@ body {
 }
 
 .banner {
+  background: linear-gradient(135deg, #000 60%, #111);
+  padding: 1.2rem;
   text-align: center;
-  padding: 1rem;
-  background-color: #111;
+  border-bottom: 1px solid #222;
+}
+
+.banner h1 {
+  color: #ff9800;
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.banner p {
+  color: #bbb;
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
 }
 
 .grid {
