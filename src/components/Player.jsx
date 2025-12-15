@@ -3,18 +3,37 @@ import { useRef, useState, useEffect } from "react";
 export default function Player({ src, title, onEnded }) {
   const videoRef = useRef(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
-    setErrorMessage(null); // Reset message when new src loads
+    setErrorMessage(null); // Reset
+    clearTimeout(timeoutRef.current);
+
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {});
+    }
+
+    // Auto-skip if no progress after 5s (catches silent stalls)
+    timeoutRef.current = setTimeout(() => {
+      if (videoRef.current && videoRef.current.currentTime === 0 && !videoRef.current.ended) {
+        handlePlaybackIssue({ type: 'timeout' });
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeoutRef.current);
   }, [src]);
 
-  const handleError = () => {
+  const handlePlaybackIssue = (e) => {
+    console.log(`Playback issue: ${e.type}`); // Debug log
+
     setErrorMessage("This video can’t be played. Skipping…");
 
-    // Auto-skip after showing message briefly
+    // Show message briefly, then skip
     setTimeout(() => {
-      if (onEnded) onEnded(); // Trigger next video
-    }, 1500); // 1.5 seconds to read the message
+      setErrorMessage(null);
+      if (onEnded) onEnded();
+    }, 1500);
   };
 
   if (!src) return null;
@@ -29,7 +48,10 @@ export default function Player({ src, title, onEnded }) {
         playsInline
         preload="metadata"
         onEnded={onEnded}
-        onError={handleError} // Key: catch playback errors (codec, network, etc.)
+        onError={handlePlaybackIssue}
+        onStalled={handlePlaybackIssue}
+        onAbort={handlePlaybackIssue}
+        onSuspend={handlePlaybackIssue}
         style={{ width: "100%", display: "block" }}
       />
 
