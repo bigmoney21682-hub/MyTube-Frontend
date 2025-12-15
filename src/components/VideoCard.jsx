@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 export default function VideoCard({ video }) {
   const navigate = useNavigate();
 
-  function handleClick() {
+  const handleClick = () => {
     if (video.id) navigate(`/watch/${video.id}`);
-  }
+  };
 
   return (
     <div className="video-card" onClick={handleClick} style={{ cursor: "pointer" }}>
