@@ -6,54 +6,82 @@ import { API_BASE } from "../config";
 
 export default function Watch() {
   const { id } = useParams();
+
   const [video, setVideo] = useState(null);
   const [stream, setStream] = useState("");
   const [related, setRelated] = useState([]);
   const [error, setError] = useState("");
 
-  // Helper: fetch video details and select best stream
-  const loadVideo = async (videoId) => {
-    try {
-      const res = await fetch(`${API_BASE}/video?id=${videoId}`);
-      const data = await res.json();
-      if (!data || !Array.isArray(data.formats)) throw new Error("Invalid video data");
-
-      const best = data.formats
-        .filter(f => f.ext === "mp4" && f.vcodec !== "none" && (f.height || 0) <= 480)
-        .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
-
-      if (!best?.url) throw new Error("No playable stream found");
-
-      setVideo(data);
-      setStream(best.url);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    }
-  };
-
-  // Load video on initial render
   useEffect(() => {
-    if (!id) return;
-    loadVideo(id);
+    let cancelled = false;
 
-    // Fetch related videos
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/related?id=${id}`);
+        setError("");
+        setVideo(null);
+        setStream("");
+
+        /* ================= VIDEO ================= */
+        const res = await fetch(`${API_BASE}/video?id=${id}`);
+        if (!res.ok) throw new Error("Failed to load video");
+
         const data = await res.json();
-        setRelated(data);
+        if (!data || !Array.isArray(data.formats)) {
+          throw new Error("Invalid video data");
+        }
+
+        if (cancelled) return;
+
+        setVideo(data);
+
+        /* Pick fast, iOS-friendly stream */
+        const best = data.formats
+          .filter(
+            f =>
+              f.ext === "mp4" &&
+              f.vcodec !== "none" &&
+              (f.height || 0) <= 720
+          )
+          .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+
+        if (!best?.url) throw new Error("No playable stream found");
+
+        setStream(best.url);
+
+        /* ================= RELATED (OPTIONAL) ================= */
+        try {
+          const rel = await fetch(`${API_BASE}/related?id=${id}`);
+          if (rel.ok) {
+            const relData = await rel.json();
+            if (!cancelled && Array.isArray(relData)) {
+              setRelated(relData);
+            }
+          }
+        } catch {
+          /* Safe ignore */
+          setRelated([]);
+        }
       } catch (err) {
-        console.error("Failed to fetch related videos", err);
+        console.error(err);
+        if (!cancelled) setError(err.message);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  if (error) return <p style={{ padding: "1rem" }}>Error: {error}</p>;
-  if (!video) return <p style={{ padding: "1rem" }}>Loading...</p>;
+  if (error) {
+    return <p style={{ padding: "1rem" }}>Error: {error}</p>;
+  }
+
+  if (!video) {
+    return <p style={{ padding: "1rem" }}>Loading...</p>;
+  }
 
   return (
-    <div className="watch-page">
+    <div>
       <div className="player-container">
         <h2>{video.title}</h2>
         <Player src={stream} />
@@ -64,13 +92,7 @@ export default function Watch() {
           <h3>Related Videos</h3>
           <div className="grid">
             {related.map(v => (
-              <div
-                key={v.id}
-                onClick={() => loadVideo(v.id)} // CLICKABLE RELATED VIDEO
-                style={{ cursor: "pointer" }}
-              >
-                <VideoCard video={v} />
-              </div>
+              <VideoCard key={v.id} video={v} />
             ))}
           </div>
         </div>
