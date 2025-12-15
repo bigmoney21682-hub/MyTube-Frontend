@@ -1,28 +1,56 @@
-let searchAbort;
+import { useState } from "react";
+import SearchBar from "../components/SearchBar";
+import VideoCard from "../components/VideoCard";
+import { API_BASE } from "../config";
 
-async function search(q) {
-  if (!q || q.length < 2) return;
+export default function Home() {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  if (searchAbort) searchAbort.abort();
-  searchAbort = new AbortController();
+  let controller;
 
-  setLoading(true);
+  async function search(q) {
+    if (!q || q.length < 2) return;
 
-  try {
-    const res = await fetch(
-      `${API_BASE}/search?q=${encodeURIComponent(q)}`,
-      { signal: searchAbort.signal }
-    );
+    if (controller) controller.abort();
+    controller = new AbortController();
 
-    if (!res.ok) throw new Error("Search failed");
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/search?q=${encodeURIComponent(q)}`,
+        { signal: controller.signal }
+      );
 
-    const data = await res.json();
-    setVideos(data);
-  } catch (err) {
-    if (err.name !== "AbortError") {
-      console.error("Search failed", err);
+      if (!res.ok) throw new Error("Search failed");
+
+      const data = await res.json();
+      setVideos(data);
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("Search failed", err);
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
   }
+
+  return (
+    <div>
+      <div className="banner">
+        <h1>MyTube GOD MODE</h1>
+        <p>Ad-free, premium, ultra-fast streaming</p>
+      </div>
+
+      <SearchBar onSearch={search} />
+
+      {loading && <p>Loading...</p>}
+
+      <div className="grid">
+        {videos.map(v => (
+          <VideoCard key={v.id} video={v} />
+        ))}
+      </div>
+    </div>
+  );
 }
