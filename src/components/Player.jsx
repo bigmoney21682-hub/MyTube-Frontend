@@ -1,32 +1,18 @@
-import { useEffect, useRef } from "react";
-
-export default function Player({ src }) {
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !src) return;
-
-    v.muted = true;       // REQUIRED for iOS
-    v.playsInline = true;
-    v.src = src;
-
-    const playPromise = v.play();
-    if (playPromise?.catch) {
-      playPromise.catch(() => {
-        // iOS will wait for user interaction
-      });
-    }
-  }, [src]);
+export default function Player({ src, onEnded }) {
+  if (!src) return null;
 
   return (
     <video
-      ref={videoRef}
+      src={src}
       controls
+      autoPlay
       playsInline
-      muted
-      preload="metadata"
-      style={{ width: "100%" }}
+      onEnded={onEnded}
+      style={{
+        width: "100%",
+        borderRadius: "10px",
+        background: "#000"
+      }}
     />
   );
 }
