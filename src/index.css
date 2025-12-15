@@ -1,46 +1,42 @@
-/* index.css */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #121212;
+  font-family: sans-serif;
+  background-color: #111;
   color: #eee;
-}
-
-.banner {
-  text-align: center;
-  padding: 2rem 1rem;
-  background: linear-gradient(90deg, #ff416c, #ff4b2b);
-  color: white;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 1rem;
   padding: 1rem;
 }
 
-.video-card {
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.video-card:hover {
-  transform: scale(1.03);
-}
-
 .video-card img {
   width: 100%;
-  display: block;
+  border-radius: 8px;
 }
 
 .player-container {
-  padding: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
 }
 
 .related-videos {
-  padding: 1rem;
+  margin-top: 1rem;
+}
+
+@media (orientation: landscape) {
+  .watch-page {
+    display: flex;
+    gap: 1rem;
+  }
+  .player-container {
+    flex: 2;
+  }
+  .related-videos {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
 }
