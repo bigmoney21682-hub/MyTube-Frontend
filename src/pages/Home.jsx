@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import { useState, useEffect } from "react";
 import SearchBar from "../components/SearchBar";
 import VideoCard from "../components/VideoCard";
@@ -13,7 +12,7 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // Fetch trending videos
+  // Fetch trending
   useEffect(() => {
     (async () => {
       try {
@@ -26,7 +25,7 @@ export default function Home() {
     })();
   }, [page]);
 
-  // Infinite scroll for trending
+  // Infinite scroll
   useEffect(() => {
     const handleScroll = () => {
       if (
@@ -58,6 +57,23 @@ export default function Home() {
     }
   }
 
+  // When a video is clicked (trending or search)
+  async function handlePlay(video) {
+    try {
+      const res = await fetch(`${API_BASE}/video?id=${video.id}`);
+      const data = await res.json();
+      if (!data || !Array.isArray(data.formats)) throw new Error("Invalid video data");
+      const best = data.formats
+        .filter(f => f.ext === "mp4" && f.vcodec !== "none" && (f.height || 0) <= 720)
+        .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+      if (!best?.url) throw new Error("No playable stream found");
+      setSelectedVideo({ ...data, stream: best.url });
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  }
+
   return (
     <div>
       <div className="banner">
@@ -75,7 +91,7 @@ export default function Home() {
               <Player src={selectedVideo.stream} />
             </>
           ) : (
-            <p style={{ padding: "1rem" }}>Select a trending video to play</p>
+            <p style={{ padding: "1rem" }}>Select a video to play</p>
           )}
         </div>
 
@@ -85,9 +101,17 @@ export default function Home() {
             {trending.map(v => (
               <div
                 key={v.id}
-                onClick={() =>
-                  setSelectedVideo({ ...v, stream: v.formats[0]?.url })
-                }
+                onClick={() => handlePlay(v)}
+                style={{ cursor: "pointer" }}
+              >
+                <VideoCard video={v} />
+              </div>
+            ))}
+
+            {videos.map(v => (
+              <div
+                key={v.id}
+                onClick={() => handlePlay(v)}
                 style={{ cursor: "pointer" }}
               >
                 <VideoCard video={v} />
