@@ -1,32 +1,28 @@
-// Home.jsx snippet
-const [trending, setTrending] = useState([]);
-const [page, setPage] = useState(1);
-const [loadingTrending, setLoadingTrending] = useState(false);
+let searchAbort;
 
-useEffect(() => {
-  fetchTrending(page);
-}, [page]);
+async function search(q) {
+  if (!q || q.length < 2) return;
 
-async function fetchTrending(page) {
-  setLoadingTrending(true);
+  if (searchAbort) searchAbort.abort();
+  searchAbort = new AbortController();
+
+  setLoading(true);
+
   try {
-    const res = await fetch(`${API_BASE}/trending?page=${page}`);
+    const res = await fetch(
+      `${API_BASE}/search?q=${encodeURIComponent(q)}`,
+      { signal: searchAbort.signal }
+    );
+
+    if (!res.ok) throw new Error("Search failed");
+
     const data = await res.json();
-    setTrending(prev => [...prev, ...data]);
+    setVideos(data);
   } catch (err) {
-    console.error(err);
+    if (err.name !== "AbortError") {
+      console.error("Search failed", err);
+    }
   } finally {
-    setLoadingTrending(false);
+    setLoading(false);
   }
 }
-
-// Infinite scroll listener
-useEffect(() => {
-  const handleScroll = () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
-      setPage(prev => prev + 1);
-    }
-  };
-  window.addEventListener('scroll', handleScroll);
-  return () => window.removeEventListener('scroll', handleScroll);
-}, []);
