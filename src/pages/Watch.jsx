@@ -22,25 +22,35 @@ export default function Watch() {
         setStream("");
         setRelated([]);
 
-        /* ========== VIDEO ========== */
+        /* ========= VIDEO ========= */
         const res = await fetch(`${API_BASE}/video?id=${id}`);
         if (!res.ok) throw new Error("Video unavailable");
 
         const data = await res.json();
-        if (!data?.formats) throw new Error("Invalid video data");
-        if (cancelled) return;
+        if (!data?.formats || !Array.isArray(data.formats)) {
+          throw new Error("Invalid video data");
+        }
 
+        if (cancelled) return;
         setVideo(data);
 
-  const candidates = data.formats
-  .filter(f => f.url && (f.ext === "mp4" || f.ext === "webm"))
-  .sort((a, b) => (b.height || 0) - (a.height || 0));
+        /* ========= SAFARI-SAFE FORMAT ========= */
+        const playable = data.formats
+          .filter(f =>
+            f.url &&
+            f.ext === "mp4" &&
+            f.vcodec !== "none" &&
+            f.acodec !== "none"
+          )
+          .sort((a, b) => (b.height || 0) - (a.height || 0));
 
-if (!candidates.length) throw new Error("No playable stream found");
+        if (!playable.length) {
+          throw new Error("No Safari-compatible stream");
+        }
 
-setStream(candidates[0].url);
+        setStream(playable[0].url);
 
-        /* ========== RELATED (NON-BLOCKING) ========== */
+        /* ========= RELATED (NON-BLOCKING) ========= */
         try {
           const rel = await fetch(`${API_BASE}/related?id=${id}`);
           if (rel.ok) {
@@ -50,11 +60,11 @@ setStream(candidates[0].url);
             }
           }
         } catch {
-          /* silently ignore */
+          /* ignore */
         }
 
       } catch (err) {
-        console.error(err);
+        console.error("Watch error:", err.message);
         if (!cancelled) setError(err.message);
       }
     })();
@@ -64,12 +74,12 @@ setStream(candidates[0].url);
     };
   }, [id]);
 
-  /* ========== UI STATES ========== */
+  /* ========= UI ========= */
 
   if (error) {
     return (
       <p style={{ padding: "1rem", color: "#f88" }}>
-        This video can’t be played. Try another one.
+        This video can’t be played on iOS Safari.
       </p>
     );
   }
