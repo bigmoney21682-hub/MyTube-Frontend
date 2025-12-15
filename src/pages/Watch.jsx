@@ -34,6 +34,7 @@ export default function Watch() {
 
   // Load video on initial render
   useEffect(() => {
+    if (!id) return;
     loadVideo(id);
 
     // Fetch related videos
