@@ -1,3 +1,4 @@
+// src/pages/Watch.jsx
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Player from "../components/Player";
@@ -6,7 +7,6 @@ import { API_BASE } from "../config";
 
 export default function Watch() {
   const { id } = useParams();
-
   const [video, setVideo] = useState(null);
   const [stream, setStream] = useState("");
   const [related, setRelated] = useState([]);
@@ -21,8 +21,8 @@ export default function Watch() {
         setVideo(null);
         setStream("");
 
-        /* ================= VIDEO ================= */
-        const res = await fetch(`${API_BASE}/video?id=${id}`);
+        // ================= VIDEO =================
+        const res = await fetch(`${API_BASE}/video/${id}`);
         if (!res.ok) throw new Error("Failed to load video");
 
         const data = await res.json();
@@ -31,10 +31,9 @@ export default function Watch() {
         }
 
         if (cancelled) return;
-
         setVideo(data);
 
-        /* Pick fast, iOS-friendly stream */
+        // Pick fast, iOS-friendly stream
         const best = data.formats
           .filter(
             f =>
@@ -45,20 +44,16 @@ export default function Watch() {
           .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
 
         if (!best?.url) throw new Error("No playable stream found");
-
         setStream(best.url);
 
-        /* ================= RELATED (OPTIONAL) ================= */
+        // ================= RELATED (optional) =================
         try {
-          const rel = await fetch(`${API_BASE}/related?id=${id}`);
+          const rel = await fetch(`${API_BASE}/related/${id}`);
           if (rel.ok) {
             const relData = await rel.json();
-            if (!cancelled && Array.isArray(relData)) {
-              setRelated(relData);
-            }
+            if (!cancelled && Array.isArray(relData)) setRelated(relData);
           }
         } catch {
-          /* Safe ignore */
           setRelated([]);
         }
       } catch (err) {
@@ -72,13 +67,8 @@ export default function Watch() {
     };
   }, [id]);
 
-  if (error) {
-    return <p style={{ padding: "1rem" }}>Error: {error}</p>;
-  }
-
-  if (!video) {
-    return <p style={{ padding: "1rem" }}>Loading...</p>;
-  }
+  if (error) return <p style={{ padding: "1rem" }}>Error: {error}</p>;
+  if (!video) return <p style={{ padding: "1rem" }}>Loading...</p>;
 
   return (
     <div>
