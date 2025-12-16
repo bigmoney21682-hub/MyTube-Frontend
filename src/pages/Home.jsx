@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Header from "../components/Header";
 import SearchBar from "../components/SearchBar";
 import VideoCard from "../components/VideoCard";
 import { API_BASE } from "../config";
@@ -8,13 +9,12 @@ export default function Home() {
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  /* ========== SEARCH FUNCTION ========== */
   async function search(q) {
     if (!q) return;
     setLoading(true);
     try {
-      const res = await fetch(
-        `${API_BASE}/search?q=${encodeURIComponent(q)}`
-      );
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
       setVideos(data);
     } catch (err) {
@@ -24,7 +24,7 @@ export default function Home() {
     }
   }
 
-  /* ✅ TRENDING LOAD */
+  /* ========== TRENDING LOAD ========== */
   useEffect(() => {
     (async () => {
       try {
@@ -39,6 +39,9 @@ export default function Home() {
 
   return (
     <div>
+      {/* Header includes Playlist button */}
+      <Header />
+
       <div className="banner">
         <h1>🔥🔥 MyTube 🔥🔥</h1>
         <p>Ad-free, premium, ultra-fast streaming</p>
@@ -56,7 +59,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <h3 style={{ padding: "1rem" }}> 👀 Trending</h3>
+          <h3 style={{ padding: "1rem" }}>👀 Trending</h3>
           <div className="grid">
             {trending.map(v => (
               <VideoCard key={v.id} video={v} />
