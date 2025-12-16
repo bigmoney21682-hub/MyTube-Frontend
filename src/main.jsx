@@ -6,7 +6,7 @@ import { PlaylistProvider } from "./components/PlaylistContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/MyTube-Frontend">
       <PlaylistProvider>
         <App />
       </PlaylistProvider>
