@@ -32,9 +32,16 @@ export default function RelatedVideos({ videoId, apiKey }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
       {videos.map((video) => (
-        <Link key={video.id.videoId} to={`/watch/${video.id.videoId}`} style={{ color: "#fff" }}>
+        <Link
+          key={video.id.videoId}
+          to={`/watch/${video.id.videoId}`}
+          style={{ color: "#fff" }}
+        >
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <img src={video.snippet.thumbnails.default.url} alt={video.snippet.title} />
+            <img
+              src={video.snippet.thumbnails.default.url}
+              alt={video.snippet.title}
+            />
             <span>{video.snippet.title}</span>
           </div>
         </Link>
