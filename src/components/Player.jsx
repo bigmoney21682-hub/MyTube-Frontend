@@ -1,36 +1,50 @@
 import { useRef, useState, useEffect } from "react";
 
-export default function Player({ src, title, onEnded }) {
+export default function Player({ src, title, onEnded, isSafariPlayable }) {
   const videoRef = useRef(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const timeoutRef = useRef(null);
 
   useEffect(() => {
-    setErrorMessage(null); // Reset
+    setErrorMessage(null);
     clearTimeout(timeoutRef.current);
 
-    if (videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play().catch(() => {});
+    if (!src) return;
+
+    // Preemptive skip for known unplayable videos
+    if (isSafariPlayable === false) {
+      setErrorMessage("This video can’t be played. Skipping…");
+      timeoutRef.current = setTimeout(() => {
+        setErrorMessage(null);
+        if (onEnded) onEnded();
+      }, 1500);
+      return;
     }
 
-    // Auto-skip if no progress after 5s (catches silent stalls)
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.load();
+    video.play().catch(() => {});
+
+    // Longer timeout + better check to avoid false positives
     timeoutRef.current = setTimeout(() => {
-      if (videoRef.current && videoRef.current.currentTime === 0 && !videoRef.current.ended) {
+      if (video.currentTime < 1 && !video.ended && video.readyState < 3) {
         handlePlaybackIssue({ type: 'timeout' });
       }
-    }, 5000);
+    }, 8000);
 
     return () => clearTimeout(timeoutRef.current);
-  }, [src]);
+  }, [src, isSafariPlayable, onEnded]);
 
   const handlePlaybackIssue = (e) => {
-    console.log(`Playback issue: ${e.type}`); // Debug log
+    console.log(`Playback issue detected: ${e.type}`);
+
+    if (errorMessage) return; // No duplicates
 
     setErrorMessage("This video can’t be played. Skipping…");
 
-    // Show message briefly, then skip
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setErrorMessage(null);
       if (onEnded) onEnded();
     }, 1500);
@@ -46,12 +60,13 @@ export default function Player({ src, title, onEnded }) {
         controls
         autoPlay
         playsInline
-        preload="metadata"
+        preload="auto"
         onEnded={onEnded}
         onError={handlePlaybackIssue}
         onStalled={handlePlaybackIssue}
         onAbort={handlePlaybackIssue}
         onSuspend={handlePlaybackIssue}
+        onEmptied={handlePlaybackIssue}
         style={{ width: "100%", display: "block" }}
       />
 
