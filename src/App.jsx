@@ -1,14 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Watch from "./pages/Watch";
+import Playlist from "./pages/Playlist";
 
 export default function App() {
   return (
-    <BrowserRouter basename="/MyTube-Frontend">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/watch/:id" element={<Watch />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/watch/:id" element={<Watch />} />
+      <Route path="/playlist" element={<Playlist />} />
+    </Routes>
   );
 }
