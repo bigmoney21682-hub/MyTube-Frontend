@@ -1,4 +1,4 @@
-// File: src/components/PlaylistContext.jsx  (create this in your frontend components folder)
+// File: src/components/PlaylistContext.jsx
 
 import { createContext, useContext, useState, useEffect } from "react";
 
@@ -24,24 +24,27 @@ export function PlaylistProvider({ children }) {
   }, [playlists]);
 
   const createPlaylist = (name) => {
-    if (!name.trim()) return;
-    setPlaylists([...playlists, { name, videos: [] }]);
+    if (!name?.trim()) return;
+    setPlaylists(prev => [...prev, { name: name.trim(), videos: [] }]);
   };
 
   const addToPlaylist = (playlistIndex, video) => {
-    const newPlaylists = [...playlists];
-    // Avoid duplicates in the same playlist
-    const exists = newPlaylists[playlistIndex].videos.some(v => v.id === video.id);
-    if (!exists) {
-      newPlaylists[playlistIndex].videos.push(video);
-      setPlaylists(newPlaylists);
-    }
+    setPlaylists(prev => {
+      const newPlaylists = [...prev];
+      const pl = newPlaylists[playlistIndex];
+      if (!pl.videos.some(v => v.id === video.id)) {
+        pl.videos.push(video);
+      }
+      return newPlaylists;
+    });
   };
 
   const removeFromPlaylist = (playlistIndex, videoId) => {
-    const newPlaylists = [...playlists];
-    newPlaylists[playlistIndex].videos = newPlaylists[playlistIndex].videos.filter(v => v.id !== videoId);
-    setPlaylists(newPlaylists);
+    setPlaylists(prev => {
+      const newPlaylists = [...prev];
+      newPlaylists[playlistIndex].videos = newPlaylists[playlistIndex].videos.filter(v => v.id !== videoId);
+      return newPlaylists;
+    });
   };
 
   const currentPlaylist = playlists[currentPlaylistIndex] || { name: "Favorites", videos: [] };
