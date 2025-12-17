@@ -1,33 +1,105 @@
+// src/components/VideoCard.jsx
+
 import { useNavigate } from "react-router-dom";
 import { usePlaylists } from "./PlaylistContext";
 
 export default function VideoCard({ video, onClick }) {
   const navigate = useNavigate();
-  const { addToPlaylist } = usePlaylists();
+  const { addToPlaylist, playlists } = usePlaylists();
 
-  const handleClick = () => {
-    if (onClick) return onClick();
-    navigate(`/watch/${video.id}`);
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/watch/${video.id}`);
+    }
+  };
+
+  const handleAddClick = (e) => {
+    e.stopPropagation(); // Prevent triggering card navigation
+
+    // Use first playlist (usually Favorites) or fallback
+    const targetPlaylist = playlists[0];
+    if (targetPlaylist) {
+      addToPlaylist(targetPlaylist.id, video);
+      // Optional: small feedback
+      // You can replace alert with a toast later if desired
+      alert(`Added "${video.title}" to ${targetPlaylist.name}!`);
+    }
   };
 
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div
+      onClick={handleCardClick}
+      style={{
+        cursor: "pointer",
+        borderRadius: "12px",
+        overflow: "hidden",
+        background: "#111",
+        boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+        marginBottom: 24,
+        transition: "transform 0.2s",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
       <img
         src={video.thumbnail}
         alt={video.title}
-        onClick={handleClick}
         style={{
           width: "100%",
-          cursor: "pointer",
-          borderRadius: 8
+          height: "auto",
+          display: "block",
+          borderRadius: "12px 12px 0 0",
         }}
       />
 
-      <h4 style={{ margin: "8px 0" }}>{video.title}</h4>
+      <div style={{ padding: "12px" }}>
+        <h4
+          style={{
+            margin: "0 0 8px",
+            fontSize: "1rem",
+            lineHeight: 1.3,
+            color: "#fff",
+          }}
+        >
+          {video.title}
+        </h4>
 
-      <button onClick={() => addToPlaylist(0, video)}>
-        ➕ Playlist
-      </button>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              opacity: 0.7,
+              fontSize: "0.85rem",
+            }}
+          >
+            {video.author} • {video.views || "Views"}
+          </p>
+
+          <button
+            onClick={handleAddClick}
+            style={{
+              background: "#ff0000",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              padding: "6px 12px",
+              fontSize: "0.9rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            ➕ Add to Playlist
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
