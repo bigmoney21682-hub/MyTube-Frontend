@@ -1,24 +1,29 @@
+// src/components/Spinner.jsx
+
+import ProgressLoader from "./ProgressLoader";
+
 export default function Spinner() {
   return (
-    <div style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "2rem"
-    }}>
-      <div style={{
-        width: 36,
-        height: 36,
-        border: "4px solid #333",
-        borderTop: "4px solid #ff9800",
-        borderRadius: "50%",
-        animation: "spin 1s linear infinite"
-      }} />
-      <style>
-        {`@keyframes spin {
-          to { transform: rotate(360deg); }
-        }`}
-      </style>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.9)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        gap: 24,
+      }}
+    >
+      <ProgressLoader duration={800} />
+      <p style={{ color: "#fff", opacity: 0.9, fontSize: "1.2rem" }}>
+        Searching…
+      </p>
     </div>
   );
 }
