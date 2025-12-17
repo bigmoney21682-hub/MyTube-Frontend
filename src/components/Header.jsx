@@ -18,37 +18,44 @@ export default function Header({ onSearch }) {
       <div
         style={{
           display: "flex",
-          alignItems: "flex-start",
+          alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 12,
+          marginBottom: 16,
         }}
       >
-        {/* Menu button */}
+        {/* Menu button - smaller */}
         <button
-          style={{ opacity: 0.7, fontSize: "1.4rem", background: "none", border: "none", cursor: "pointer" }}
+          style={{
+            opacity: 0.7,
+            fontSize: "1.3rem",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+          }}
           onClick={() => navigate("/settings")}
         >
           ☰
         </button>
 
-        {/* Title + wider subtitle */}
+        {/* Title + subtitle - wider area, smaller font, centered properly */}
         <div
           onClick={() => navigate("/")}
           style={{
             cursor: "pointer",
-            textAlign: "center",
             flex: 1,
-            padding: "0 20px",
+            maxWidth: "70vw",  // Much wider to fit flames on same line
+            textAlign: "center",
           }}
         >
           <h1
             style={{
               margin: 0,
-              fontSize: "1.8rem",
+              fontSize: "1.6rem",  // Slightly smaller to help fit flames
               background: "linear-gradient(90deg, #ff8c00, #ff4500, #ff0000)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
+              display: "inline-block",
             }}
           >
             🔥 MyTube 🔥
@@ -57,9 +64,9 @@ export default function Header({ onSearch }) {
           <p
             style={{
               margin: "8px auto 0",
-              fontSize: "0.85rem",
+              fontSize: "0.82rem",
               opacity: 0.85,
-              maxWidth: "80vw",  // Much wider, responsive
+              maxWidth: "90%",
               lineHeight: 1.4,
               color: "#ccc",
             }}
@@ -68,56 +75,66 @@ export default function Header({ onSearch }) {
           </p>
         </div>
 
-        {/* Playlist button */}
+        {/* Playlist button - smaller icon */}
         <button
-          style={{ opacity: 0.7, fontSize: "1.4rem", background: "none", border: "none", cursor: "pointer" }}
+          style={{
+            opacity: 0.7,
+            fontSize: "1.3rem",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+          }}
           onClick={() => navigate("/playlists")}
         >
-          ▶︎ Playlists
+          ▶︎
         </button>
       </div>
 
-      {/* Search bar with custom styling and red button */}
+      {/* Search bar - solid white rectangle with red button */}
       {onSearch && (
         <div
           style={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            gap: 8,
+            gap: 0,
             maxWidth: "90vw",
             margin: "0 auto",
           }}
         >
           <div
             style={{
-              flex: 1,
-              maxWidth: "600px",
               display: "flex",
-              background: "linear-gradient(to right, #ffffff, #e0e0e0)",
+              width: "100%",
+              maxWidth: "600px",
+              background: "#ffffff",
               borderRadius: "8px",
               overflow: "hidden",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
             }}
           >
             <SearchBar
               onSearch={onSearch}
-              style={{ flex: 1, border: "none", background: "transparent" }}
+              style={{
+                flex: 1,
+                border: "none",
+                background: "transparent",
+                padding: "12px 16px",
+                fontSize: "1rem",
+              }}
             />
             <button
               style={{
                 background: "#ff0000",
                 color: "white",
                 border: "none",
-                padding: "0 20px",
+                padding: "0 24px",
                 fontSize: "1rem",
                 fontWeight: "bold",
                 cursor: "pointer",
-                borderRadius: "0 8px 8px 0",
               }}
               onClick={() => {
                 const input = document.querySelector('input[placeholder="Search videos..."]');
-                if (input && input.value.trim()) {
+                if (input?.value.trim()) {
                   onSearch(input.value.trim());
                 }
               }}
