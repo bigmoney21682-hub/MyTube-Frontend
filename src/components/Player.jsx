@@ -1,53 +1,95 @@
 import { useRef, useState, useEffect } from "react";
 
+/**
+ * Player.jsx
+ *
+ * Responsibilities:
+ * - Play a given src safely (Safari + yt-dlp friendly)
+ * - Detect truly unplayable videos
+ * - Skip EXACTLY ONCE when needed
+ * - NEVER loop or re-trigger errors
+ */
+
 export default function Player({ src, title, onEnded, isSafariPlayable }) {
   const videoRef = useRef(null);
-  const [errorMessage, setErrorMessage] = useState(null);
   const timeoutRef = useRef(null);
+  const hasSkippedRef = useRef(false);
+
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
+    // Reset state on NEW src
     setErrorMessage(null);
+    hasSkippedRef.current = false;
     clearTimeout(timeoutRef.current);
 
     if (!src) return;
 
-    // Preemptive skip for known unplayable videos
+    // 🔒 HARD STOP: known-unplayable (pre-filtered)
     if (isSafariPlayable === false) {
-      setErrorMessage("This video can’t be played. Skipping…");
-      timeoutRef.current = setTimeout(() => {
-        setErrorMessage(null);
-        if (onEnded) onEnded();
-      }, 1500);
+      triggerSkip("This video can’t be played. Skipping…");
       return;
     }
 
     const video = videoRef.current;
     if (!video) return;
 
-    video.load();
-    video.play().catch(() => {});
+    // Force reload for Safari reliability
+    try {
+      video.pause();
+      video.load();
+      video.play().catch(() => {});
+    } catch {}
 
-    // Longer timeout + better check to avoid false positives
+    /**
+     * ⏱ SAFETY TIMEOUT
+     * Only skip if:
+     * - video never started
+     * - not ended
+     * - still not enough data
+     */
     timeoutRef.current = setTimeout(() => {
-      if (video.currentTime < 1 && !video.ended && video.readyState < 3) {
-        handlePlaybackIssue({ type: 'timeout' });
+      if (
+        video.currentTime < 1 &&
+        !video.ended &&
+        video.readyState < 3
+      ) {
+        handlePlaybackIssue({ type: "timeout" });
       }
     }, 8000);
 
-    return () => clearTimeout(timeoutRef.current);
-  }, [src, isSafariPlayable, onEnded]);
+    return () => {
+      clearTimeout(timeoutRef.current);
+    };
+  }, [src, isSafariPlayable]);
 
-  const handlePlaybackIssue = (e) => {
-    console.log(`Playback issue detected: ${e.type}`);
+  /**
+   * CENTRALIZED SKIP LOGIC
+   * Guarantees skip happens ONCE
+   */
+  const triggerSkip = (message) => {
+    if (hasSkippedRef.current) return;
 
-    if (errorMessage) return; // No duplicates
+    hasSkippedRef.current = true;
+    setErrorMessage(message);
 
-    setErrorMessage("This video can’t be played. Skipping…");
+    clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
       setErrorMessage(null);
       if (onEnded) onEnded();
     }, 1500);
+  };
+
+  /**
+   * MEDIA FAILURE HANDLER
+   */
+  const handlePlaybackIssue = (e) => {
+    if (hasSkippedRef.current) return;
+
+    console.warn("Playback issue:", e?.type || "unknown");
+
+    triggerSkip("This video can’t be played. Skipping…");
   };
 
   if (!src) return null;
@@ -61,13 +103,15 @@ export default function Player({ src, title, onEnded, isSafariPlayable }) {
         autoPlay
         playsInline
         preload="auto"
-        onEnded={onEnded}
+        style={{ width: "100%", display: "block" }}
+        onEnded={() => {
+          if (!hasSkippedRef.current && onEnded) onEnded();
+        }}
         onError={handlePlaybackIssue}
         onStalled={handlePlaybackIssue}
         onAbort={handlePlaybackIssue}
         onSuspend={handlePlaybackIssue}
         onEmptied={handlePlaybackIssue}
-        style={{ width: "100%", display: "block" }}
       />
 
       {errorMessage && (
@@ -77,28 +121,20 @@ export default function Player({ src, title, onEnded, isSafariPlayable }) {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            background: "rgba(0, 0, 0, 0.8)",
+            background: "rgba(0, 0, 0, 0.85)",
             color: "#fff",
             padding: "12px 20px",
             borderRadius: "8px",
-            fontSize: "1.1rem",
-            fontWeight: "500",
+            fontSize: "1.05rem",
+            fontWeight: 500,
             textAlign: "center",
             pointerEvents: "none",
             zIndex: 10,
-            animation: "fadeIn 0.3s ease",
           }}
         >
           {errorMessage}
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }
