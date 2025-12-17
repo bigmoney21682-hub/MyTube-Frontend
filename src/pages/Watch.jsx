@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Player from "../components/Player";
 import VideoCard from "../components/VideoCard";
-import WaitBar from "../components/WaitBar";
 import Footer from "../components/Footer";
 import { API_BASE } from "../config";
 
@@ -32,7 +31,6 @@ export default function Watch() {
       setLoading(true);
 
       try {
-        // 1️⃣ Load video metadata
         const res = await fetch(`${API_BASE}/video?id=${id}`);
         if (!res.ok) throw new Error("Video unavailable");
 
@@ -42,7 +40,6 @@ export default function Watch() {
 
         setVideo(data);
 
-        // 2️⃣ Pick best Safari-compatible stream
         const playable = data.formats
           .filter(f =>
             f.url &&
@@ -59,7 +56,6 @@ export default function Watch() {
 
         setStream(playable[0].url);
 
-        // 3️⃣ Load related (non-blocking)
         fetch(`${API_BASE}/related?id=${id}`)
           .then(r => (r.ok ? r.json() : []))
           .then(d => {
@@ -83,7 +79,6 @@ export default function Watch() {
     };
   }, [id]);
 
-  // ▶️ Auto-advance logic
   function handleEnded() {
     if (related.length > 0) {
       navigate(`/watch/${related[0].id}`);
@@ -104,13 +99,21 @@ export default function Watch() {
 
   return (
     <div>
-      {/* 🔒 Header ALWAYS visible */}
       <Header />
 
-      {/* 🎬 Player zone */}
+      {/* ⏳ CENTERED LOADING */}
       {loading && (
-        <div style={{ marginTop: 80 }}>
-          <WaitBar label="Loading video" />
+        <div
+          style={{
+            height: "50vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.1rem",
+            opacity: 0.8,
+          }}
+        >
+          Loading video…
         </div>
       )}
 
@@ -123,7 +126,7 @@ export default function Watch() {
 
       {!loading && video && stream && (
         <>
-          {/* 📌 Sticky player */}
+          {/* 📌 Sticky Player */}
           <div
             style={{
               position: "sticky",
@@ -140,12 +143,10 @@ export default function Watch() {
             />
           </div>
 
-          {/* 🎥 Title */}
           <div style={{ padding: "12px" }}>
-            <h2 style={{ marginBottom: 8 }}>{video.title}</h2>
+            <h2>{video.title}</h2>
           </div>
 
-          {/* 🔜 Related */}
           {related.length > 0 && (
             <>
               <h3 style={{ padding: "0 12px" }}>Up Next</h3>
