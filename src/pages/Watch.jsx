@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Player from "../components/Player";
 import VideoCard from "../components/VideoCard";
+import Spinner from "../components/Spinner";
 import { API_BASE } from "../config";
 
 export default function Watch() {
@@ -11,137 +12,98 @@ export default function Watch() {
   const [video, setVideo] = useState(null);
   const [stream, setStream] = useState("");
   const [related, setRelated] = useState([]);
-  const [error, setError] = useState(null);
-  const [errorReason, setErrorReason] = useState("");
+  const [fatalError, setFatalError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
-        // RESET STATE (CRITICAL)
         setVideo(null);
         setStream("");
         setRelated([]);
-        setError(null);
-        setErrorReason("");
+        setFatalError("");
 
-        /* ========== VIDEO METADATA ========== */
         const res = await fetch(`${API_BASE}/video?id=${id}`);
-        if (!res.ok) {
-          throw new Error("Video is unavailable or removed");
-        }
+        if (!res.ok) throw new Error("Video removed or unavailable");
 
         const data = await res.json();
-        if (!data?.formats || !Array.isArray(data.formats)) {
-          throw new Error("Invalid video data returned");
-        }
+        if (!data?.formats) throw new Error("Invalid metadata");
 
         if (cancelled) return;
         setVideo(data);
 
-        /* ========== FORMAT SELECTION ========== */
         const playable = data.formats
           .filter(f =>
             f.url &&
             f.ext === "mp4" &&
             f.vcodec !== "none" &&
-            f.acodec !== "none" &&
-            !f.is_dash &&
-            (f.height || 0) <= 720
+            f.acodec !== "none"
           )
           .sort((a, b) => (b.height || 0) - (a.height || 0));
 
         if (!playable.length) {
-          throw new Error(
-            "No playable MP4 streams (video may be DRM-locked, region-blocked, or DASH-only)"
-          );
+          throw new Error("No Safari-compatible stream");
         }
 
         setStream(playable[0].url);
 
-        /* ========== RELATED ========== */
         const rel = await fetch(`${API_BASE}/related?id=${id}`);
         if (rel.ok) {
           const relData = await rel.json();
-          if (!cancelled && Array.isArray(relData)) {
-            setRelated(relData);
-          }
+          if (!cancelled) setRelated(relData || []);
         }
 
       } catch (err) {
-        console.error(err);
-        if (!cancelled) {
-          setError(true);
-          setErrorReason(err.message || "Unknown playback failure");
-        }
+        if (!cancelled) setFatalError(err.message);
       }
     }
 
     load();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [id]);
 
-  /* ========== AUTO-SKIP ON ERROR ========== */
-  useEffect(() => {
-    if (error && related.length > 0) {
-      const t = setTimeout(() => {
+  function handleVideoError() {
+    setFatalError("Playback failed (codec, DRM, or network)");
+    setTimeout(() => {
+      if (related.length > 0) {
         navigate(`/watch/${related[0].id}`);
-      }, 2500);
-
-      return () => clearTimeout(t);
-    }
-  }, [error, related, navigate]);
-
-  /* ========== AUTOPLAY NEXT ========== */
-  function handleEnded() {
-    if (related.length > 0) {
-      navigate(`/watch/${related[0].id}`);
-    }
+      }
+    }, 2500);
   }
 
-  /* ========== RENDER STATES ========== */
-
-  // Fatal playback failure (no stream)
-  if (error && !stream) {
+  if (fatalError) {
     return (
       <div style={{ padding: "1rem", color: "#f88" }}>
-        <p>⚠️ This video can’t be played.</p>
-        <p style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-          Reason: {errorReason}
-        </p>
-        <p style={{ fontSize: "0.85rem", opacity: 0.6 }}>
-          Skipping to next available video…
-        </p>
+        <p>⚠️ {fatalError}</p>
+        <p style={{ opacity: 0.7 }}>Skipping to next video…</p>
       </div>
     );
   }
 
-  // Loading
   if (!video || !stream) {
-    return <p style={{ padding: "1rem" }}>Loading video…</p>;
+    return <Spinner />;
   }
 
-  // Playable
   return (
     <div>
-      <div className="player-container">
-        <h2>{video.title}</h2>
-        <Player src={stream} onEnded={handleEnded} />
-      </div>
+      <h2>{video.title}</h2>
+
+      <Player
+        src={stream}
+        onEnded={() => related[0] && navigate(`/watch/${related[0].id}`)}
+        onError={handleVideoError}
+      />
 
       {related.length > 0 && (
-        <div className="related-videos">
+        <>
           <h3>Up Next</h3>
           <div className="grid">
             {related.map(v => (
               <VideoCard key={v.id} video={v} />
             ))}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
