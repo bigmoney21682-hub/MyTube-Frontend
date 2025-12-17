@@ -28,7 +28,7 @@ export default function Header({ onSearch }) {
         >
           <h1 style={{ margin: 0 }}>🔥 MyTube 🔥</h1>
           <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.8 }}>
-            Ad-free • Background playback • Continuous play
+            No Ads • No Tracking • Free Premium Features • Background Playback • Unlimited Custom Playlists • 4K Support • No Connection to Google's Servers
           </p>
         </div>
 
