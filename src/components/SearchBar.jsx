@@ -1,42 +1,38 @@
+// src/components/SearchBar.jsx
+
 import { useState } from "react";
 
 export default function SearchBar({ onSearch }) {
-  const [query, setQuery] = useState("");
+  const [q, setQ] = useState("");
 
-  const handleSubmit = (e) => {
+  function submit(e) {
     e.preventDefault();
-    if (query.trim()) onSearch(query);
-  };
+    onSearch(q.trim());
+  }
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: "20px", textAlign: "center" }}>
+    <form
+      onSubmit={submit}
+      style={{
+        width: "75%",
+        maxWidth: 520,
+      }}
+    >
       <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search YouTube..."
+        value={q}
+        onChange={e => setQ(e.target.value)}
+        placeholder="Search YouTube"
         style={{
-          padding: "12px",
-          width: "70%",
-          maxWidth: "500px",
-          fontSize: "1.2rem",
-          borderRadius: "8px 0 0 8px",
-          border: "none"
+          width: "100%",
+          padding: "10px 14px",
+          borderRadius: 999,
+          border: "1px solid #333",
+          background: "#000",
+          color: "#fff",
+          textAlign: "center",
+          fontSize: "1rem",
         }}
       />
-      <button
-        type="submit"
-        style={{
-          padding: "12px 20px",
-          fontSize: "1.2rem",
-          borderRadius: "0 8px 8px 0",
-          border: "none",
-          background: "#ff0000",
-          color: "white"
-        }}
-      >
-        Search
-      </button>
     </form>
   );
 }
