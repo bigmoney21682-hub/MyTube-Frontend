@@ -1,24 +1,39 @@
+// src/pages/Home.jsx
+
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import VideoCard from "../components/VideoCard";
+import Spinner from "../components/Spinner";
 import { API_BASE } from "../config";
 
 export default function Home() {
   const [videos, setVideos] = useState([]);
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   async function search(q) {
     if (!q) return;
+
+    // ENTER SEARCH MODE
+    setSearching(true);
     setLoading(true);
+    setVideos([]);
+
     try {
-      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(
+        `${API_BASE}/search?q=${encodeURIComponent(q)}`
+      );
       const data = await res.json();
-      setVideos(data);
-    } catch (err) {
-      console.error("Search failed", err);
+
+      setVideos(
+        (data || []).filter(v => v?.id && v?.duration)
+      );
+    } catch {
+      setVideos([]);
     } finally {
       setLoading(false);
+      setSearching(false);
     }
   }
 
@@ -27,41 +42,58 @@ export default function Home() {
       try {
         const res = await fetch(`${API_BASE}/trending`);
         const data = await res.json();
-        setTrending(data);
+
+        setTrending(
+          (data || []).filter(v => v?.id && v?.duration)
+        );
       } catch {
         setTrending([]);
       }
     })();
   }, []);
 
+  /* ======================
+     SEARCH LOADING STATE
+     ====================== */
+  if (searching && loading) {
+    return (
+      <div>
+        <Header onSearch={search} />
+
+        <div
+          style={{
+            height: "70vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+          }}
+        >
+          <Spinner />
+          <p style={{ opacity: 0.85 }}>Searching…</p>
+        </div>
+      </div>
+    );
+  }
+
+  const list = videos.length > 0 ? videos : trending;
+
   return (
     <div>
-      {/* Header contains SearchBar + Playlist button */}
       <Header onSearch={search} />
 
-      <div className="banner">
-        <h1>🔥🔥 MyTube 🔥🔥</h1>
-        <p>Ad-free, premium, ultra-fast streaming</p>
-      </div>
-
-      {loading && <p style={{ padding: "1rem" }}>Loading...</p>}
-
-      {videos.length > 0 ? (
-        <div className="grid">
-          {videos.map(v => (
-            <VideoCard key={v.id} video={v} />
-          ))}
-        </div>
-      ) : (
-        <>
-          <h3 style={{ padding: "1rem" }}>👀 Trending</h3>
-          <div className="grid">
-            {trending.map(v => (
-              <VideoCard key={v.id} video={v} />
-            ))}
-          </div>
-        </>
+      {videos.length === 0 && (
+        <h3 style={{ padding: "1rem", opacity: 0.8 }}>
+          👀 Trending
+        </h3>
       )}
+
+      <div className="grid">
+        {list.map(v => (
+          <VideoCard key={v.id} video={v} />
+        ))}
+      </div>
     </div>
   );
 }
