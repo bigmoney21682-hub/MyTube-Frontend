@@ -19,3 +19,4 @@ export default function Footer() {
     >
       <button onClick={() => navigate("/")}>← Back</button>
     </footer>
+          )
