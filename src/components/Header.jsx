@@ -5,26 +5,43 @@ export default function Header({ onSearch }) {
   const navigate = useNavigate();
 
   return (
-    <div
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 1000,
-        background: "#000",
-        padding: "10px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "8px"
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <strong style={{ color: "#fff" }}>MyTube</strong>
-        <button onClick={() => navigate("/playlist")}>
-          📂 Playlist
-        </button>
+    <header style={{ padding: "12px", borderBottom: "1px solid #222" }}>
+      {/* Top row */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Left placeholder */}
+        <button style={{ opacity: 0.6 }}>☰</button>
+
+        {/* Title */}
+        <div
+          onClick={() => navigate("/")}
+          style={{
+            cursor: "pointer",
+            textAlign: "center",
+            flex: 1,
+          }}
+        >
+          <h1 style={{ margin: 0 }}>🔥🔥 MyTube 🔥🔥</h1>
+          <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.8 }}>
+            Ad-free • Background playback • Continuous play
+          </p>
+        </div>
+
+        {/* Right placeholder */}
+        <button style={{ opacity: 0.6 }}>▶︎</button>
       </div>
 
-      <SearchBar onSearch={onSearch} />
-    </div>
+      {/* Search BELOW title */}
+      {onSearch && (
+        <div style={{ marginTop: "10px" }}>
+          <SearchBar onSearch={onSearch} />
+        </div>
+      )}
+    </header>
   );
 }
