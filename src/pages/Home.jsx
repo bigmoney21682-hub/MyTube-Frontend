@@ -48,7 +48,7 @@ export default function Home() {
 
   return (
     <div>
-      {(loadingSearch || loadingTrending) && <Spinner message={loadingSearch ? "Searching…" : "Loading trending…"} />}
+      {(loadingSearch || loadingTrending) && <Spinner message={loadingSearch ? "Searching… If your lucky you might get results in a few hours" : "Loading MyTube… Go have a cup of coffee, I'll still be here loading"} />}
 
       <Header onSearch={search} />
 
