@@ -23,7 +23,6 @@ export default function Header({ onSearch }) {
           marginBottom: 16,
         }}
       >
-        {/* Menu button - smaller */}
         <button
           style={{
             opacity: 0.7,
@@ -37,20 +36,19 @@ export default function Header({ onSearch }) {
           ☰
         </button>
 
-        {/* Title + subtitle - wider area, smaller font, centered properly */}
         <div
           onClick={() => navigate("/")}
           style={{
             cursor: "pointer",
             flex: 1,
-            maxWidth: "70vw",  // Much wider to fit flames on same line
+            maxWidth: "70vw",
             textAlign: "center",
           }}
         >
           <h1
             style={{
               margin: 0,
-              fontSize: "1.6rem",  // Slightly smaller to help fit flames
+              fontSize: "1.6rem",
               background: "linear-gradient(90deg, #ff8c00, #ff4500, #ff0000)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -75,7 +73,6 @@ export default function Header({ onSearch }) {
           </p>
         </div>
 
-        {/* Playlist button - smaller icon */}
         <button
           style={{
             opacity: 0.7,
@@ -90,7 +87,7 @@ export default function Header({ onSearch }) {
         </button>
       </div>
 
-      {/* Search bar - solid white rectangle with red button */}
+      {/* Search bar */}
       {onSearch && (
         <div
           style={{
@@ -120,6 +117,7 @@ export default function Header({ onSearch }) {
                 background: "transparent",
                 padding: "12px 16px",
                 fontSize: "1rem",
+                outline: "none",
               }}
             />
             <button
@@ -133,7 +131,8 @@ export default function Header({ onSearch }) {
                 cursor: "pointer",
               }}
               onClick={() => {
-                const input = document.querySelector('input[placeholder="Search videos..."]');
+                // More reliable: find any text input inside the search bar
+                const input = document.querySelector('input[type="text"], input[placeholder]');
                 if (input?.value.trim()) {
                   onSearch(input.value.trim());
                 }
