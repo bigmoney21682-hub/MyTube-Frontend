@@ -1,3 +1,5 @@
+// src/components/PlaylistContext.jsx
+
 import { createContext, useContext, useState, useEffect } from "react";
 
 const PlaylistContext = createContext();
@@ -8,57 +10,65 @@ export function PlaylistProvider({ children }) {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch {
-        return [{ name: "Favorites", videos: [] }];
-      }
+      } catch {}
     }
-    return [{ name: "Favorites", videos: [] }];
+    return [{ id: "0", name: "Favorites", videos: [] }];
   });
 
-  const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(0);
+  const [currentPlaylistId, setCurrentPlaylistId] = useState("0");
 
   useEffect(() => {
     localStorage.setItem("mytube_playlists", JSON.stringify(playlists));
   }, [playlists]);
 
-  const createPlaylist = (name) => {
+  const addPlaylist = (name) => {
     if (!name?.trim()) return;
-    setPlaylists(p => [...p, { name: name.trim(), videos: [] }]);
+    const newPl = { id: Date.now().toString(), name: name.trim(), videos: [] };
+    setPlaylists(prev => [...prev, newPl]);
   };
 
-  const addToPlaylist = (playlistIndex, video) => {
+  const renamePlaylist = (id, newName) => {
+    if (!newName?.trim()) return;
+    setPlaylists(prev =>
+      prev.map(p => (p.id === id ? { ...p, name: newName.trim() } : p))
+    );
+  };
+
+  const deletePlaylist = (id) => {
+    setPlaylists(prev => prev.filter(p => p.id !== id));
+    if (currentPlaylistId === id) {
+      setCurrentPlaylistId(playlists[0]?.id || null);
+    }
+  };
+
+  const addToPlaylist = (playlistId, video) => {
     setPlaylists(prev => {
-      const copy = [...prev];
-      const pl = copy[playlistIndex];
-      if (!pl.videos.some(v => v.id === video.id)) {
-        pl.videos.push(video);
-      }
-      return copy;
+      return prev.map(p => {
+        if (p.id === playlistId) {
+          if (!p.videos.some(v => v.id === video.id)) {
+            return { ...p, videos: [...p.videos, video] };
+          }
+        }
+        return p;
+      });
     });
   };
 
-  const removeFromPlaylist = (playlistIndex, videoId) => {
-    setPlaylists(prev => {
-      const copy = [...prev];
-      copy[playlistIndex].videos =
-        copy[playlistIndex].videos.filter(v => v.id !== videoId);
-      return copy;
-    });
+  const setCurrentPlaylist = (playlist) => {
+    setCurrentPlaylistId(playlist.id);
   };
 
-  const currentPlaylist =
-    playlists[currentPlaylistIndex] ||
-    { name: "Favorites", videos: [] };
+  const currentPlaylist = playlists.find(p => p.id === currentPlaylistId) || playlists[0] || { name: "", videos: [] };
 
   return (
     <PlaylistContext.Provider value={{
       playlists,
       currentPlaylist,
-      currentPlaylistIndex,
-      setCurrentPlaylistIndex,
-      createPlaylist,
+      setCurrentPlaylist,
+      addPlaylist,
+      renamePlaylist,
+      deletePlaylist,
       addToPlaylist,
-      removeFromPlaylist
     }}>
       {children}
     </PlaylistContext.Provider>
