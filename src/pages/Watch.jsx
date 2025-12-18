@@ -1,9 +1,10 @@
-// File: src/pages/Watch.jsx
+// src/pages/Watch.jsx
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import Player from "../components/Player";
 import VideoCard from "../components/VideoCard";
+import Spinner from "../components/Spinner"; // Our orange spinning wheel
 import { API_BASE } from "../config";
 
 export default function Watch() {
@@ -14,21 +15,21 @@ export default function Watch() {
   const [stream, setStream] = useState(null);
   const [related, setRelated] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // Controls full-screen spinner
 
   const videoRef = useRef(null);
 
-  // -----------------------------
-  // Fetch video + related
-  // -----------------------------
   useEffect(() => {
     let cancelled = false;
 
-    setVideo(null);
-    setStream(null);
-    setRelated([]);
-    setError(null);
+    const fetchVideoData = async () => {
+      // Reset everything and show spinner
+      setVideo(null);
+      setStream(null);
+      setRelated([]);
+      setError(null);
+      setLoading(true);
 
-    (async () => {
       try {
         const res = await fetch(`${API_BASE}/video?id=${id}`);
         if (!res.ok) throw new Error("Video unavailable");
@@ -38,6 +39,7 @@ export default function Watch() {
 
         setVideo(data);
 
+        // Find best combined mp4 stream (video + audio)
         const playable = data.formats
           .filter(
             f =>
@@ -49,28 +51,37 @@ export default function Watch() {
           )
           .sort((a, b) => (b.height || 0) - (a.height || 0));
 
-        if (!playable.length) throw new Error("No playable stream");
+        if (playable.length === 0) throw new Error("No playable stream found");
 
         setStream(playable[0].url);
 
+        // Fetch related videos
         const rel = await fetch(`${API_BASE}/related?id=${id}`);
         if (rel.ok) {
           const relData = await rel.json();
-          setRelated(relData.filter(v => v.id));
+          if (!cancelled) {
+            setRelated(relData.filter(v => v?.id));
+          }
         }
       } catch (err) {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) {
+          setError(err.message || "Failed to load video");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-    })();
+    };
+
+    fetchVideoData();
 
     return () => {
       cancelled = true;
     };
   }, [id]);
 
-  // -----------------------------
-  // Skip time controls
-  // -----------------------------
+  // Skip controls
   const skipBack10 = () => {
     if (videoRef.current) videoRef.current.currentTime -= 10;
   };
@@ -79,33 +90,43 @@ export default function Watch() {
     if (videoRef.current) videoRef.current.currentTime += 10;
   };
 
-  // -----------------------------
-  // Video navigation (RELATED)
-  // -----------------------------
+  // Play next related video
   const playNextRelated = () => {
     if (related.length > 0) {
       navigate(`/watch/${related[0].id}`);
     }
   };
 
-  // Previous related not tracked yet (intentional)
   const playPreviousRelated = () => {
-    // Placeholder – intentionally no-op for now
+    // Placeholder – can be enhanced later
   };
 
   return (
-    <div style={{ paddingBottom: "60px" }}>
-      {/* Player */}
-      {stream && (
+    <div style={{ minHeight: "100vh", position: "relative" }}>
+      {/* Full-screen centered spinner while loading */}
+      {loading && <Spinner message="Loading video…" />}
+
+      {/* Error message */}
+      {error && !loading && (
+        <div
+          style={{
+            padding: "2rem",
+            textAlign: "center",
+            color: "#ff4444",
+            fontSize: "1.2rem",
+          }}
+        >
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Player (only shown when stream is ready) */}
+      {stream && !loading && (
         <div style={{ position: "sticky", top: 0, background: "#000", zIndex: 10 }}>
           <div style={{ position: "relative" }}>
-            <Player
-              ref={videoRef}
-              src={stream}
-              onEnded={playNextRelated}
-            />
+            <Player ref={videoRef} src={stream} onEnded={playNextRelated} />
 
-            {/* Controls overlay */}
+            {/* Bottom controls overlay */}
             <div
               style={{
                 position: "absolute",
@@ -114,43 +135,65 @@ export default function Watch() {
                 right: 0,
                 display: "flex",
                 justifyContent: "center",
-                gap: "10px",
+                gap: "12px",
+                pointerEvents: "none", // Allows clicks to pass through to video
               }}
             >
-              <button onClick={playPreviousRelated} disabled>
+              <button
+                onClick={playPreviousRelated}
+                disabled
+                style={{ pointerEvents: "auto" }}
+              >
                 ⏮
               </button>
 
-              <button onClick={skipBack10}>
+              <button onClick={skipBack10} style={{ pointerEvents: "auto" }}>
                 ⏪ 10s
               </button>
 
-              <button onClick={skipForward10}>
+              <button onClick={skipForward10} style={{ pointerEvents: "auto" }}>
                 10s ⏩
               </button>
 
-              <button onClick={playNextRelated} disabled={!related.length}>
+              <button
+                onClick={playNextRelated}
+                disabled={!related.length}
+                style={{ pointerEvents: "auto" }}
+              >
                 ⏭
               </button>
             </div>
           </div>
+
+          {/* Video title */}
+          {video && (
+            <div style={{ padding: "12px 16px", color: "#fff" }}>
+              <h2 style={{ margin: "0 0 8px", fontSize: "1.3rem" }}>
+                {video.title}
+              </h2>
+              <p style={{ margin: 0, opacity: 0.8 }}>
+                {video.author} • {video.views || "Views"}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Error */}
-      {error && (
-        <div style={{ padding: 16, color: "#f66" }}>
-          ⚠️ {error}
+      {/* Related videos */}
+      {!loading && related.length > 0 && (
+        <div style={{ padding: "0 12px 80px" }}>
+          <h3 style={{ padding: "0 12px", margin: "24px 0 12px" }}>
+            Up Next
+          </h3>
+          {related.map(v => (
+            <VideoCard
+              key={v.id}
+              video={v}
+              onClick={() => navigate(`/watch/${v.id}`)}
+            />
+          ))}
         </div>
       )}
-
-      {/* Related */}
-      <div style={{ padding: 12 }}>
-        {related.length > 0 && <h3>Up Next</h3>}
-        {related.map(v => (
-          <VideoCard key={v.id} video={v} />
-        ))}
-      </div>
     </div>
   );
 }
