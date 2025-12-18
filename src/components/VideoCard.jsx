@@ -16,15 +16,34 @@ export default function VideoCard({ video, onClick }) {
   };
 
   const handleAddClick = (e) => {
-    e.stopPropagation(); // Prevent triggering card navigation
+    e.stopPropagation();
 
-    // Use first playlist (usually Favorites) or fallback
-    const targetPlaylist = playlists[0];
-    if (targetPlaylist) {
-      addToPlaylist(targetPlaylist.id, video);
-      // Optional: small feedback
-      // You can replace alert with a toast later if desired
-      alert(`Added "${video.title}" to ${targetPlaylist.name}!`);
+    if (playlists.length === 0) {
+      alert("No playlists available. Create one first!");
+      return;
+    }
+
+    if (playlists.length === 1) {
+      addToPlaylist(playlists[0].id, video);
+      alert(`Added "${video.title}" to ${playlists[0].name}!`);
+      return;
+    }
+
+    // Prompt user to choose playlist
+    const playlistList = playlists
+      .map((p, i) => `${i + 1}. ${p.name} (${p.videos.length} videos)`)
+      .join("\n");
+
+    const choice = prompt(
+      `Choose a playlist to add "${video.title}" to:\n\n${playlistList}\n\nEnter number:`
+    );
+
+    const index = parseInt(choice, 10) - 1;
+    if (index >= 0 && index < playlists.length) {
+      addToPlaylist(playlists[index].id, video);
+      alert(`Added to ${playlists[index].name}!`);
+    } else if (choice !== null) {
+      alert("Invalid choice.");
     }
   };
 
